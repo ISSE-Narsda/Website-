@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - ISSE Academy</title>
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .admin-panel { display: flex; min-height: 100vh; background-color: #F5F7FA; }
+        .admin-sidebar { width: 260px; background-color: #0B1A3A; color: #FFFFFF; padding: 20px 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+        .admin-sidebar .logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; text-align: center; }
+        .admin-sidebar .logo img { height: 45px; width: auto; margin: 0 auto 8px; }
+        .admin-sidebar .logo h3 { font-size: 16px; color: #FFFFFF; margin: 0; }
+        .admin-sidebar .logo p { font-size: 12px; color: #B0C4DE; margin: 0; }
+        .admin-sidebar .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #B0C4DE; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; font-size: 14px; font-weight: 500; }
+        .admin-sidebar .nav-item:hover { background-color: rgba(255,255,255,0.05); color: #FFFFFF; }
+        .admin-sidebar .nav-item.active { background-color: rgba(212,168,67,0.1); color: #D4A843; border-left-color: #D4A843; }
+        .admin-sidebar .nav-item .icon { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+        .admin-sidebar .nav-item.logout { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+        .admin-sidebar .nav-item.logout .icon { filter: brightness(0) saturate(100%) invert(48%) sepia(71%) saturate(423%) hue-rotate(340deg) brightness(95%) contrast(94%); }
+        .admin-sidebar .nav-item.logout:hover { background-color: rgba(231,76,60,0.1); }
+        .admin-main { margin-left: 260px; padding: 30px; flex: 1; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #E8ECF0; }
+        .admin-header h1 { font-size: 28px; color: #0B1A3A; margin: 0; }
+        .admin-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; background: none; border: none; }
+        .admin-hamburger span { display: block; width: 25px; height: 3px; background-color: #0B1A3A; border-radius: 3px; }
+
+        .profile-container { max-width: 700px; margin: 0 auto; }
+
+        .profile-card { background: #FFFFFF; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); margin-bottom: 25px; }
+        body.dark-mode .profile-card { background-color: #122240; }
+        body.dark-mode .profile-card h2 { color: #E8ECF0; }
+        body.dark-mode .profile-field { border-bottom-color: #1A3A5A; }
+        body.dark-mode .profile-field .label { color: #E8ECF0; }
+        body.dark-mode .profile-field .value { color: #B0C4DE; }
+        body.dark-mode .profile-field .value .role-badge { color: #0B1A3A; }
+        body.dark-mode .form-group label { color: #E8ECF0; }
+        body.dark-mode .delete-section h2 { color: #E74C3C; }
+
+        .profile-card h2 { font-size: 20px; color: #0B1A3A; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #D4A843; }
+        .profile-field { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F5F7FA; }
+        .profile-field:last-child { border-bottom: none; }
+        .profile-field .label { font-weight: 600; color: #0B1A3A; }
+        .profile-field .value { color: #2C3E50; }
+        .profile-field .value .role-badge { background-color: #D4A843; color: #0B1A3A; padding: 2px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; color: #0B1A3A; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 10px 15px; border: 1px solid #E8ECF0; border-radius: 8px; font-size: 14px; font-family: 'Inter', sans-serif; transition: border-color 0.3s ease; }
+        .password-field-wrapper input { padding-right: 44px; }
+        .form-group input:focus { outline: none; border-color: #D4A843; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        .btn { padding: 10px 25px; border-radius: 50px; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s ease; border: none; }
+        .btn-primary { background-color: #D4A843; color: #0B1A3A; }
+        .btn-primary:hover { background-color: #C49A3A; transform: translateY(-2px); }
+        .btn-danger { background-color: #E74C3C; color: #FFFFFF; }
+        .btn-danger:hover { background-color: #C0392B; transform: translateY(-2px); }
+        .btn-secondary { background-color: #E8ECF0; color: #2C3E50; }
+        .btn-secondary:hover { background-color: #D5D8DC; }
+
+        .message { padding: 12px 16px; border-radius: 8px; margin-top: 12px; display: none; font-size: 14px; }
+        .message.success { display: block; background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .message.error { display: block; background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+
+        .delete-section { border-top: 2px solid #E74C3C; padding-top: 20px; margin-top: 10px; }
+        .delete-section h2 { color: #E74C3C; border-bottom-color: #E74C3C; }
+        .delete-section .warning { color: #E74C3C; font-size: 14px; margin-bottom: 15px; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-overlay.visible { display: flex; }
+        .modal-box { background: #FFFFFF; border-radius: 16px; padding: 35px 40px; width: 100%; max-width: 450px; }
+        .modal-box h2 { font-size: 24px; color: #0B1A3A; margin-bottom: 10px; }
+        .modal-box p { color: #7F8C8D; font-size: 14px; margin-bottom: 20px; }
+        .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+        .modal-actions .btn { padding: 10px 30px; }
+
+        @media (max-width: 768px) {
+            .admin-sidebar { transform: translateX(-100%); width: 280px; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 20px; }
+            .admin-hamburger { display: flex; }
+            .admin-header h1 { font-size: 22px; }
+            .form-row { grid-template-columns: 1fr; }
+            .profile-field { flex-direction: column; gap: 4px; }
+            .modal-box { padding: 25px 20px; margin: 20px; }
+        }
+
+        /* Admin Dropdown */
+        .admin-dropdown { position: relative; display: inline-block; }
+        .admin-dropdown-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 8px; transition: background-color 0.3s ease; font-size: 14px; color: #2C3E50; font-family: 'Inter', sans-serif; }
+        .admin-dropdown-btn:hover { background-color: rgba(0,0,0,0.05); }
+        .dropdown-arrow { font-size: 10px; transition: transform 0.3s ease; }
+        .admin-dropdown-btn.active .dropdown-arrow { transform: rotate(180deg); }
+        .admin-dropdown-menu { display: none; position: absolute; right: 0; top: 110%; background: #FFFFFF; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); min-width: 180px; padding: 8px 0; z-index: 1000; border: 1px solid #E8ECF0; }
+        .admin-dropdown-menu.show { display: block; }
+        .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 18px; color: #2C3E50; text-decoration: none; font-size: 14px; transition: background-color 0.3s ease; cursor: pointer; }
+        .dropdown-item:hover { background-color: #F5F7FA; }
+        .dropdown-divider { border: none; border-top: 1px solid #E8ECF0; margin: 4px 12px; }
+        .admin-info { display: flex; align-items: center; gap: 15px; font-size: 14px; color: #2C3E50; }
+        .role-badge { background-color: #D4A843; color: #0B1A3A; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+
+        /* Sidebar skeleton (same as academy-dashboard.html) */
+        .sidebar-skeleton { position: fixed; top: 0; left: 0; width: 260px; height: 100vh; background: #0B1A3A; z-index: 999; padding: 20px 0; }
+        body.nav-ready .sidebar-skeleton { opacity: 0; pointer-events: none; }
+        .skel-logo { width: 45px; height: 45px; background: rgba(255,255,255,0.08); border-radius: 8px; margin: 0 auto 12px; }
+        .skel-line { height: 12px; background: rgba(255,255,255,0.06); border-radius: 6px; margin: 16px 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-panel">
+        <div class="sidebar-skeleton" aria-hidden="true">
+            <div class="skel-logo"></div>
+            <div class="skel-line" style="width:70%;margin:0 auto 24px;"></div>
+            <div class="skel-line"></div>
+            <div class="skel-line"></div>
+            <div class="skel-line"></div>
+            <div class="skel-line"></div>
+            <div class="skel-line"></div>
+        </div>
+
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="logo">
+                <img src="images/new-logo.png" alt="ISSE Logo">
+                <h3>ISSE Academy</h3>
+                <p>Academic Management System</p>
+            </div>
+
+            <a href="academy-dashboard.html" class="nav-item" id="navDashboard">
+                <img src="icons/dashboard-icon.png" alt="Dashboard" class="icon"> Dashboard
+            </a>
+            <a href="academy-dashboard.html#students" class="nav-item" id="navStudents">
+                <img src="icons/students-icon.png" alt="Students" class="icon"> Students
+            </a>
+            <a href="academy-dashboard.html#staff" class="nav-item" id="navStaff">
+                <img src="icons/admins-icon.png" alt="Staff" class="icon"> Staff
+            </a>
+            <a href="academy-dashboard.html#courses" class="nav-item" id="navCourses">
+                <img src="icons/courses-icon.png" alt="Courses" class="icon"> Courses
+            </a>
+            <a href="academy-dashboard.html#my-courses" class="nav-item" id="navMyCourses">
+                <img src="icons/my-courses-icon.png" alt="My Courses" class="icon"> My Courses
+            </a>
+            <a href="academy-dashboard.html#enquiries" class="nav-item" id="navEnquiries">
+                <img src="icons/enquiries-icon.png" alt="Enquiries" class="icon"> Enquiries
+            </a>
+            <a href="academy-dashboard.html#audit" class="nav-item" id="navAudit">
+                <img src="icons/audit-icon.png" alt="Audit" class="icon"> Audit Log
+            </a>
+            <a href="academy-dashboard.html#admins" class="nav-item" id="navAdmins">
+                <img src="icons/admins-icon.png" alt="Admin Management" class="icon"> Admin Management
+            </a>
+
+            <!-- Return to main admin (Super Admin only) -->
+            <a href="admin-dashboard.html" class="nav-item" id="navMainAdmin">
+                <img src="icons/dashboard-icon.png" alt="Main Admin" class="icon"> Main Admin
+            </a>
+
+            <a href="#" class="nav-item logout" id="logoutBtn">
+                <img src="icons/logout-icon.png" alt="Logout" class="icon"> Logout
+            </a>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="admin-hamburger" id="adminHamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <h1>Profile</h1>
+                </div>
+                <div class="admin-info">
+                    <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+                        <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+                    </button>
+                    <div class="admin-dropdown">
+                        <button class="admin-dropdown-btn" id="adminDropdownBtn">
+                            <span id="adminNameDisplay">Admin</span>
+                            <span class="role-badge" id="adminRoleDisplay">Academic Staff</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="admin-dropdown-menu" id="adminDropdownMenu">
+                            <a href="academy-profile.html" class="dropdown-item">
+                                <span>👤</span> Profile
+                            </a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item" id="logoutDropdownBtn">
+                                <span>🚪</span> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-container">
+                <!-- Profile Info -->
+                <div class="profile-card">
+                    <h2>👤 Profile Information</h2>
+                    <div id="profileInfo">
+                        <div class="profile-field">
+                            <span class="label">Username</span>
+                            <span class="value" id="profileUsername">Loading...</span>
+                        </div>
+                        <div class="profile-field">
+                            <span class="label">Email</span>
+                            <span class="value" id="profileEmail">Loading...</span>
+                        </div>
+                        <div class="profile-field">
+                            <span class="label">Role</span>
+                            <span class="value"><span class="role-badge" id="profileRole">Loading...</span></span>
+                        </div>
+                        <div class="profile-field">
+                            <span class="label">Joined</span>
+                            <span class="value" id="profileJoined">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Username -->
+                <div class="profile-card">
+                    <h2>✏️ Edit Username</h2>
+                    <form id="usernameForm">
+                        <div class="form-group">
+                            <label for="newUsername">New Username</label>
+                            <input type="text" id="newUsername" placeholder="Enter new username" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Username</button>
+                        <div id="usernameMessage" class="message"></div>
+                    </form>
+                </div>
+
+                <!-- Change Password -->
+                <div class="profile-card">
+                    <h2>🔒 Change Password</h2>
+                    <form id="passwordForm">
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password</label>
+                            <div class="password-field-wrapper">
+                                <input type="password" id="currentPassword" placeholder="Enter current password" required>
+                                <button type="button" class="password-toggle-btn" aria-label="Show password"></button>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newPassword">New Password</label>
+                                <div class="password-field-wrapper">
+                                    <input type="password" id="newPassword" placeholder="Enter new password" required>
+                                    <button type="button" class="password-toggle-btn" aria-label="Show password"></button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm New Password</label>
+                                <div class="password-field-wrapper">
+                                    <input type="password" id="confirmPassword" placeholder="Confirm new password" required>
+                                    <button type="button" class="password-toggle-btn" aria-label="Show password"></button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Change Password</button>
+                        <div id="passwordMessage" class="message"></div>
+                    </form>
+                </div>
+
+                <!-- Delete Account -->
+                <div class="profile-card delete-section">
+                    <h2>🗑️ Delete Account</h2>
+                    <p class="warning">⚠️ Warning: This action is permanent and cannot be undone. All your access will be revoked.</p>
+                    <button class="btn btn-danger" id="deleteAccountBtn">Delete My Account</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Delete Account Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-box">
+            <h2>⚠️ Delete Account</h2>
+            <p>Are you sure you want to delete your account? This action is permanent and cannot be undone.</p>
+            <div class="form-group">
+                <label for="deletePassword">Enter your password to confirm</label>
+                <div class="password-field-wrapper">
+                    <input type="password" id="deletePassword" placeholder="Enter your password">
+                    <button type="button" class="password-toggle-btn" aria-label="Show password"></button>
+                </div>
+            </div>
+            <div id="deleteMessage" class="message"></div>
+            <div class="modal-actions">
+                <button class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete My Account</button>
+                <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script>
+        // ==================== SESSION CHECK ====================
+        let currentAdmin = null;
+        const ALLOWED_ROLES = ['Super Admin', 'Head of Academic Staff', 'Academic Staff', 'Lecturer'];
+
+        initDarkModeToggle();
+        (async function() {
+            const admin = await getCurrentAdmin();
+
+            if (!admin) {
+                window.location.replace('academy-login.html');
+                return;
+            }
+
+            if (!ALLOWED_ROLES.includes(admin.role)) {
+                await db.auth.signOut();
+                window.location.replace('academy-login.html');
+                return;
+            }
+
+            if (admin.is_active === false) {
+                await db.auth.signOut();
+                window.location.replace('academy-login.html');
+                return;
+            }
+
+            currentAdmin = admin;
+            document.getElementById('adminNameDisplay').textContent = admin.username;
+            document.getElementById('adminRoleDisplay').textContent = admin.role;
+
+            // Show/Hide sidebar items based on role (mirrors academy-dashboard.html)
+            const role = admin.role;
+            const isSuper = role === 'Super Admin';
+            const isHoAS = role === 'Head of Academic Staff';
+            const isAcademic = role === 'Academic Staff';
+            const isLecturer = role === 'Lecturer';
+
+            document.getElementById('navStaff').style.display = (isSuper || isHoAS) ? 'flex' : 'none';
+            document.getElementById('navCourses').style.display = (isSuper || isHoAS || isAcademic) ? 'flex' : 'none';
+            document.getElementById('navMyCourses').style.display = isLecturer ? 'flex' : 'none';
+            document.getElementById('navEnquiries').style.display = (isSuper || isHoAS || isAcademic) ? 'flex' : 'none';
+            document.getElementById('navAudit').style.display = isSuper ? 'flex' : 'none';
+            document.getElementById('navAdmins').style.display = isSuper ? 'flex' : 'none';
+            document.getElementById('navMainAdmin').style.display = isSuper ? 'flex' : 'none';
+
+            document.body.classList.add('nav-ready');
+
+            // Load profile data
+            loadProfile(admin);
+        })();
+
+        // ==================== LOAD PROFILE ====================
+        function loadProfile(admin) {
+            document.getElementById('profileUsername').textContent = admin.username;
+            document.getElementById('profileEmail').textContent = admin.email;
+            document.getElementById('profileRole').textContent = admin.role;
+            document.getElementById('profileJoined').textContent = admin.created_at ? new Date(admin.created_at).toLocaleDateString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric'
+            }) : 'N/A';
+        }
+
+        // ==================== UPDATE USERNAME ====================
+        document.getElementById('usernameForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const newUsername = document.getElementById('newUsername').value.trim();
+            const messageEl = document.getElementById('usernameMessage');
+
+            if (!newUsername || newUsername.length < 2) {
+                messageEl.className = 'message error';
+                messageEl.textContent = 'Username must be at least 2 characters.';
+                return;
+            }
+
+            try {
+                const updated = await updateAdminUsername(currentAdmin.id, newUsername);
+                currentAdmin.username = updated.username;
+                document.getElementById('adminNameDisplay').textContent = updated.username;
+                document.getElementById('profileUsername').textContent = updated.username;
+                messageEl.className = 'message success';
+                messageEl.textContent = '✅ Username updated successfully!';
+                document.getElementById('newUsername').value = '';
+                await logActivity('Profile Update', currentAdmin, { action: 'Updated username' });
+            } catch (error) {
+                console.error('Error updating username:', error);
+                messageEl.className = 'message error';
+                messageEl.textContent = '❌ Error updating username: ' + error.message;
+            }
+        });
+
+        // ==================== CHANGE PASSWORD ====================
+        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const messageEl = document.getElementById('passwordMessage');
+
+            if (newPassword.length < 6) {
+                messageEl.className = 'message error';
+                messageEl.textContent = 'New password must be at least 6 characters.';
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                messageEl.className = 'message error';
+                messageEl.textContent = 'Passwords do not match.';
+                return;
+            }
+
+            try {
+                const { error } = await db.auth.updateUser({
+                    password: newPassword
+                });
+
+                if (error) throw error;
+
+                messageEl.className = 'message success';
+                messageEl.textContent = '✅ Password changed successfully!';
+                document.getElementById('passwordForm').reset();
+                await logActivity('Password Change', currentAdmin);
+            } catch (error) {
+                console.error('Error changing password:', error);
+                messageEl.className = 'message error';
+                messageEl.textContent = '❌ ' + (error.message || 'Error changing password. Please check your current password.');
+            }
+        });
+
+        // ==================== DELETE ACCOUNT ====================
+        const deleteModal = document.getElementById('deleteModal');
+        const deleteMessageEl = document.getElementById('deleteMessage');
+
+        document.getElementById('deleteAccountBtn').addEventListener('click', function() {
+            deleteModal.classList.add('visible');
+            document.getElementById('deletePassword').value = '';
+            deleteMessageEl.className = 'message';
+            deleteMessageEl.textContent = '';
+        });
+
+        document.getElementById('cancelDeleteBtn').addEventListener('click', function() {
+            deleteModal.classList.remove('visible');
+        });
+
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('visible');
+        });
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+            const password = document.getElementById('deletePassword').value;
+
+            if (!password) {
+                deleteMessageEl.className = 'message error';
+                deleteMessageEl.textContent = 'Please enter your password to confirm.';
+                return;
+            }
+
+            this.disabled = true;
+            this.textContent = 'Deleting...';
+
+            try {
+                const { error: signInError } = await db.auth.signInWithPassword({
+                    email: currentAdmin.email,
+                    password: password
+                });
+
+                if (signInError) {
+                    deleteMessageEl.className = 'message error';
+                    deleteMessageEl.textContent = '❌ Incorrect password. Please try again.';
+                    this.disabled = false;
+                    this.textContent = 'Yes, Delete My Account';
+                    return;
+                }
+
+                await logActivity('Account Deleted', currentAdmin);
+                await db.from('admin_profiles').delete().eq('id', currentAdmin.id);
+                await db.auth.signOut();
+                window.location.href = 'academy-login.html?deleted=true';
+
+            } catch (error) {
+                console.error('Error deleting account:', error);
+                deleteMessageEl.className = 'message error';
+                deleteMessageEl.textContent = '❌ Error deleting account: ' + error.message;
+                this.disabled = false;
+                this.textContent = 'Yes, Delete My Account';
+            }
+        });
+
+        // ==================== ADMIN DROPDOWN ====================
+        const dropdownBtn = document.getElementById('adminDropdownBtn');
+        const dropdownMenu = document.getElementById('adminDropdownMenu');
+
+        if (dropdownBtn && dropdownMenu) {
+            dropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                dropdownMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownBtn.classList.remove('active');
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+
+            document.getElementById('logoutDropdownBtn').addEventListener('click', async function(e) {
+                e.preventDefault();
+                await logActivity('Logout', currentAdmin, {});
+                await db.auth.signOut();
+                window.location.replace('academy-login.html');
+            });
+        }
+
+        // ==================== HAMBURGER TOGGLE ====================
+        document.getElementById('adminHamburger').addEventListener('click', function() {
+            document.getElementById('adminSidebar').classList.toggle('open');
+        });
+
+        // ==================== LOGOUT ====================
+        document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            await logActivity('Logout', currentAdmin, {});
+            await db.auth.signOut();
+            window.location.replace('academy-login.html');
+        });
+    </script>
+</body>
+</html>

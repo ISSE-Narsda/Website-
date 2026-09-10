@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article - Institute of Space Science & Engineering</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+<link rel="manifest" href="manifest.json">
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Article Page Specific Styles */
+        .article-banner {
+            background-image: url('images/default-news.png');
+            min-height: 250px;
+        }
+
+        .article-content-wrapper {
+            padding: 60px 0;
+            background-color: #FFFFFF;
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-mode .article-content-wrapper {
+            background-color: #0A1628;
+        }
+
+        .article-main {
+            max-width: 850px;
+            margin: 0 auto 60px;
+        }
+
+        .article-main .article-date {
+            font-size: 14px;
+            font-weight: 600;
+            color: #D4A843;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .article-main h1 {
+            font-size: 38px;
+            color: #0B1A3A;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+/* Article Featured Image - Full Size, No Cropping */
+.article-featured-image {
+    width: 100%;
+    max-width: 850px;
+    margin: 0 auto 30px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    background: #f5f5f5;
+}
+
+.article-featured-image img {
+    width: 100%;
+    height: auto;  /* Natural height - NO CROPPING, NO LIMITS */
+    display: block;
+}
+
+body.dark-mode .article-featured-image {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    background: #1a1a2e;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .article-featured-image {
+        border-radius: 8px;
+        margin: 0 auto 20px;
+    }
+}
+
+body.dark-mode .article-featured-image {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+        body.dark-mode .article-main h1 {
+            color: #FFFFFF;
+        }
+
+        .article-main .article-body {
+            font-size: 18px;
+            line-height: 1.9;
+            color: #2C3E50;
+        }
+
+        body.dark-mode .article-main .article-body {
+            color: #B0C4DE;
+        }
+
+        .article-main .article-body p {
+            margin-bottom: 20px;
+        }
+
+        .article-divider {
+            border: 0;
+            height: 2px;
+            background: linear-gradient(to right, #D4A843, transparent);
+            margin: 0 auto 50px;
+            max-width: 850px;
+        }
+
+        .other-news-section {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .other-news-section h2 {
+            font-size: 30px;
+            color: #0B1A3A;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #D4A843;
+            display: inline-block;
+        }
+
+        body.dark-mode .other-news-section h2 {
+            color: #FFFFFF;
+        }
+
+        .other-news-section .section-subtitle {
+            text-align: left;
+            margin-bottom: 40px;
+            font-size: 16px;
+            color: #7F8C8D;
+        }
+
+        .other-news-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .other-news-card {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border: 1px solid #E8ECF0;
+        }
+
+        body.dark-mode .other-news-card {
+            background-color: #122240;
+            border-color: #1A3A5A;
+        }
+
+        .other-news-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(11, 26, 58, 0.10);
+            border-color: #D4A843;
+        }
+
+        .other-news-card .news-image {
+            height: 180px;
+            overflow: hidden;
+        }
+
+        .other-news-card .news-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .other-news-card .news-content {
+            padding: 20px 25px 25px;
+        }
+
+        .other-news-card .news-date {
+            font-size: 13px;
+            font-weight: 600;
+            color: #D4A843;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .other-news-card h3 {
+            font-size: 18px;
+            margin: 8px 0 10px;
+            color: #0B1A3A;
+        }
+
+        body.dark-mode .other-news-card h3 {
+            color: #FFFFFF;
+        }
+
+        .other-news-card p {
+            font-size: 15px;
+            color: #5D6D7E;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        body.dark-mode .other-news-card p {
+            color: #B0C4DE;
+        }
+
+        .article-not-found {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .article-not-found h2 {
+            font-size: 32px;
+            color: #0B1A3A;
+            margin-bottom: 15px;
+        }
+
+        body.dark-mode .article-not-found h2 {
+            color: #FFFFFF;
+        }
+
+        .article-not-found p {
+            font-size: 18px;
+            color: #7F8C8D;
+            margin-bottom: 30px;
+        }
+
+        .article-not-found .btn {
+            margin-top: 10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .other-news-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .article-main h1 {
+                font-size: 28px;
+            }
+            .article-main .article-body {
+                font-size: 16px;
+            }
+            .article-content-wrapper {
+                padding: 40px 0;
+            }
+            .other-news-grid {
+                grid-template-columns: 1fr;
+            }
+            .other-news-section h2 {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .article-main h1 {
+                font-size: 22px;
+            }
+            .article-main .article-body {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== HEADER / NAVIGATION ==================== -->
+    <header>
+        <div class="container">
+            <div class="header-left">
+                <div class="logo">
+                    <a href="index.html">
+                        <img src="images/new-logo.png" alt="ISSE Logo" class="logo-img">
+                    </a>
+                </div>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="programs.html">Programs</a></li>
+                        <li><a href="admissions.html">Admissions</a></li>
+                        <li><a href="news.html">News</a></li>
+                        <li><a href="collaborations.html">Collaborations</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                    <div class="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </nav>
+            </div>
+            <div class="header-right">
+                <a href="https://isse.edu.ng:2096/" target="_blank" class="btn-staff-mail-header">Staff Mail</a>
+                <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+                    <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== PAGE BANNER ==================== -->
+    <section class="page-banner article-banner">
+        <div class="page-banner-overlay"></div>
+        <div class="container page-banner-content">
+            <h1>Article</h1>
+            <p class="banner-subtitle">Read the full story</p>
+        </div>
+    </section>
+
+    <!-- ==================== ARTICLE CONTENT ==================== -->
+    <section class="article-content-wrapper">
+        <div class="container">
+            <div id="articleContainer">
+                <!-- Article will be rendered by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+    <!-- Decorative night sky. Animated entirely in CSS -->
+    <div class="footer-sky" aria-hidden="true">
+        <div class="star-layer star-layer-1"></div>
+        <div class="star-layer star-layer-2"></div>
+        <div class="star-layer star-layer-3"></div>
+        <span class="shooting-star shooting-star-1"></span>
+        <span class="shooting-star shooting-star-2"></span>
+        <span class="shooting-star shooting-star-3"></span>
+    </div>
+
+    <div class="container">
+        <div class="footer-grid">
+            <!-- Column 1: About -->
+            <div class="footer-about">
+                <img src="images/new-logo.png" alt="ISSE Logo" class="footer-logo-img">
+                <p>Institute of Space Science & Engineering — Advancing space science education and research in Nigeria and the African continent.</p>
+                <div class="footer-partner">
+                    <img src="images/aust-logo.png" alt="AUST Logo" class="footer-partner-logo">
+                    <p>African University of Science and Technology — A pan-African centre of excellence in science and technology.</p>
+                </div>
+                <div class="footer-partner">
+                    <img src="images/nasrda-logo.png" alt="NASRDA Logo" class="footer-partner-logo">
+                    <p>National Space Research and Development Agency — Pioneering Nigeria's space science and technology development.</p>
+                </div>
+            </div>
+
+            <!-- Column 2: Quick Links -->
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="programs.html">Programs</a></li>
+                    <li><a href="admissions.html">Admissions</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="collaborations.html">Collaborations</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+                <div class="footer-staff-mail">
+                    <a href="https://isse.edu.ng:2096/" target="_blank" class="btn btn-staff-mail">Staff Mail</a>
+                </div>
+            </div>
+
+            <!-- Column 3 & 4: Contact Us + Follow Us side by side, Newsletter underneath -->
+            <div class="footer-contact-social-wrapper">
+                <div class="footer-contact-social-row">
+                    <div class="footer-contact">
+                        <h4>Contact Us</h4>
+                        <ul>
+                            <li class="contact-location">
+                                <img src="icons/location.png" alt="Location" class="footer-contact-icon">
+                                Obasanjo Space Centre, Km 17, Airport Road, Lugbe, Abuja
+                            </li>
+                            <li class="contact-email">
+                                <img src="icons/email.png" alt="Email" class="footer-contact-icon">
+                                admissions@isse.edu.ng
+                            </li>
+                            <li class="contact-phone">
+                                <img src="icons/phone.png" alt="Phone" class="footer-contact-icon">
+                                +234(0)9035652894
+                            </li>
+                        </ul>
+                    </div>
+
+                                        <div class="footer-social">
+                        <h4>Follow Us</h4>
+                        <div class="social-icons">
+                            <a href="https://www.facebook.com/p/Institute-of-Space-Science-and-Engineering-Abuja-100057449769077/" target="_blank" rel="noopener"><img src="icons/facebook.png" alt="Facebook"></a>
+                            <a href="https://www.instagram.com/isse_nasrda/" target="_blank" rel="noopener"><img src="icons/instagram.png" alt="Instagram"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Newsletter spans across both Contact Us and Follow Us -->
+                <div class="footer-newsletter">
+                    <h4>Subscribe to Our Newsletter</h4>
+                    <p>Get the latest news from ISSE delivered to your inbox</p>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" id="newsletterEmail" placeholder="your.name@example.com" aria-label="Your email address" autocomplete="email" required>
+                        <button type="submit" id="newsletterButton">Subscribe</button>
+                    </form>
+                    <p class="newsletter-note" id="newsletterNote" role="status" aria-live="polite"></p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 Institute of Space Science and Engineering. All rights reserved.</p>
+            <p class="footer-bottom-links">
+                <a href="privacy-policy.html">Privacy Policy</a>
+            </p>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+<script src="script.js"></script>
+<script>
+
+    // ==================== RENDER ARTICLE ====================
+    async function renderArticle() {
+        const container = document.getElementById('articleContainer');
+        if (!container) return;
+
+        // Get article ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const articleId = urlParams.get('id');
+
+        if (!articleId) {
+            container.innerHTML = `
+                <div class="article-not-found">
+                    <h2>No Article Selected</h2>
+                    <p>Please select a news article to read.</p>
+                    <a href="news.html" class="btn btn-primary">View All News</a>
+                </div>
+            `;
+            return;
+        }
+
+        try {
+            // ✅ Load article and other news in parallel
+            const [articleResult, otherNewsResult] = await Promise.all([
+                supabaseClient.from('news').select('*').eq('id', articleId).single(),
+                supabaseClient.from('news').select('*').neq('id', articleId).order('created_at', { ascending: false }).limit(6)
+            ]);
+
+            if (articleResult.error) throw articleResult.error;
+            const article = articleResult.data;
+
+            if (!article) {
+                container.innerHTML = `
+                    <div class="article-not-found">
+                        <h2>Article Not Found</h2>
+                        <p>The article you're looking for doesn't exist or may have been removed.</p>
+                        <a href="news.html" class="btn btn-primary">View All News</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Format content
+            const contentParagraphs = article.content ? article.content.split('\n').filter(p => p.trim() !== '') : [];
+
+// Check if custom image exists
+const hasImage = article.image_url && article.image_url !== 'images/default-news.png';
+
+// Render the main article
+let articleHTML = `
+    <div class="article-main">
+        ${hasImage ? `
+            <div class="article-featured-image">
+                <img src="${article.image_url}" alt="${article.title}" loading="lazy">
+            </div>
+        ` : ''}
+        <span class="article-date">${article.date || 'Coming Soon'}</span>
+        <h1>${article.title}</h1>
+        <div class="article-body">
+            ${contentParagraphs.map(p => `<p>${p}</p>`).join('')}
+        </div>
+    </div>
+`;
+
+            // Render other news if available
+            if (!otherNewsResult.error && otherNewsResult.data && otherNewsResult.data.length > 0) {
+                const otherNews = otherNewsResult.data;
+                articleHTML += `
+                    <hr class="article-divider">
+                    <div class="other-news-section">
+                        <h2>Other News From ISSE</h2>
+                        <p class="section-subtitle">Explore more articles from our archive</p>
+                        <div class="other-news-grid">
+                            ${otherNews.map(item => {
+                                const summary = item.content ? item.content.substring(0, 120) : '';
+                                const hasMore = item.content && item.content.length > 120;
+                                return `
+                                    <div class="other-news-card">
+                                        <div class="news-image">
+                                            <img src="${item.image_url || 'images/default-news.png'}" alt="News thumbnail">
+                                        </div>
+                                        <div class="news-content">
+                                            <span class="news-date">${item.date || 'Coming Soon'}</span>
+                                            <h3>${item.title}</h3>
+                                            <p>${summary}${hasMore ? '...' : ''}</p>
+                                            <a href="article.html?id=${item.id}" class="btn btn-link">Read More →</a>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = articleHTML;
+        } catch (error) {
+            console.error('Error loading article:', error);
+            container.innerHTML = `
+                <div class="article-not-found">
+                    <h2>Error Loading Article</h2>
+                    <p>There was a problem loading this article. Please try again later.</p>
+                    <a href="news.html" class="btn btn-primary">View All News</a>
+                </div>
+            `;
+        }
+
+    }
+
+    // ==================== INIT ====================
+    renderArticle();
+</script>
+
+</body>
+</html>

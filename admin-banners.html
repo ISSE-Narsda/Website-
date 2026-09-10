@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banner Management - ISSE Admin</title>
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .admin-panel { display: flex; min-height: 100vh; background-color: #F5F7FA; }
+        .admin-sidebar { width: 260px; background-color: #0B1A3A; color: #FFFFFF; padding: 20px 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+        .admin-sidebar .logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; text-align: center; }
+        .admin-sidebar .logo img { height: 45px; width: auto; margin: 0 auto 8px; }
+        .admin-sidebar .logo h3 { font-size: 16px; color: #FFFFFF; margin: 0; }
+        .admin-sidebar .logo p { font-size: 12px; color: #B0C4DE; margin: 0; }
+        .admin-sidebar .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #B0C4DE; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; font-size: 14px; font-weight: 500; }
+        .admin-sidebar .nav-item:hover { background-color: rgba(255,255,255,0.05); color: #FFFFFF; }
+        .admin-sidebar .nav-item.active { background-color: rgba(212,168,67,0.1); color: #D4A843; border-left-color: #D4A843; }
+        .admin-sidebar .nav-item .icon { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+        .admin-sidebar .nav-item.logout { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+        .admin-sidebar .nav-item.logout .icon { filter: brightness(0) saturate(100%) invert(48%) sepia(71%) saturate(423%) hue-rotate(340deg) brightness(95%) contrast(94%); }
+        .admin-sidebar .nav-item.logout:hover { background-color: rgba(231,76,60,0.1); }
+        .admin-main { margin-left: 260px; padding: 30px; flex: 1; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #E8ECF0; }
+        .admin-header h1 { font-size: 28px; color: #0B1A3A; margin: 0; }
+        .admin-header .admin-info { display: flex; align-items: center; gap: 15px; font-size: 14px; color: #2C3E50; }
+        .admin-header .admin-info .role-badge { background-color: #D4A843; color: #0B1A3A; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .admin-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; background: none; border: none; }
+        .admin-hamburger span { display: block; width: 25px; height: 3px; background-color: #0B1A3A; border-radius: 3px; }
+
+        .banner-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .banner-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+            border: 1px solid #E8ECF0;
+        }
+
+        .banner-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            border-color: #D4A843;
+        }
+
+        .banner-card .banner-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0B1A3A;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .banner-card .banner-label .status-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 10px;
+            border-radius: 12px;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .banner-card .banner-label .status-badge.default {
+            background: #E8ECF0;
+            color: #7F8C8D;
+        }
+
+        .banner-card .banner-preview {
+            width: 100%;
+            height: 140px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #F5F7FA;
+            border: 1px solid #E8ECF0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .banner-card .banner-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .banner-card .banner-preview .no-image {
+            color: #B0C4DE;
+            font-size: 13px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .banner-card .banner-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .banner-card .banner-actions .btn {
+            padding: 8px 16px;
+            font-size: 13px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+        }
+
+        .btn-upload {
+            background-color: #D4A843;
+            color: #0B1A3A;
+        }
+
+        .btn-upload:hover {
+            background-color: #C49A3A;
+            transform: translateY(-2px);
+        }
+
+        .btn-reset {
+            background-color: #E8ECF0;
+            color: #2C3E50;
+        }
+
+        .btn-reset:hover {
+            background-color: #D5D8DC;
+            transform: translateY(-2px);
+        }
+
+        .btn-upload-file {
+            background-color: #0B1A3A;
+            color: #FFFFFF;
+        }
+
+        .btn-upload-file:hover {
+            background-color: #1A2A5A;
+            transform: translateY(-2px);
+        }
+
+        .btn-upload-file:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .banner-card .file-input-wrapper {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            background: #F5F7FA;
+            border-radius: 8px;
+            border: 1px dashed #D4A843;
+        }
+
+        .banner-card .file-input-wrapper.visible {
+            display: block;
+        }
+
+        .banner-card .file-input-wrapper input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .banner-card .upload-progress {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #7F8C8D;
+        }
+
+        /* Admin Dropdown */
+        .admin-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .admin-dropdown-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            color: #2C3E50;
+            font-family: 'Inter', sans-serif;
+        }
+        .admin-dropdown-btn:hover { background-color: rgba(0,0,0,0.05); }
+        .dropdown-arrow { font-size: 10px; transition: transform 0.3s ease; }
+        .admin-dropdown-btn.active .dropdown-arrow { transform: rotate(180deg); }
+        .admin-dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 110%;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            min-width: 180px;
+            padding: 8px 0;
+            z-index: 1000;
+            border: 1px solid #E8ECF0;
+        }
+        .admin-dropdown-menu.show { display: block; }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            color: #2C3E50;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .dropdown-item:hover { background-color: #F5F7FA; }
+        .dropdown-divider { border: none; border-top: 1px solid #E8ECF0; margin: 4px 12px; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: #7F8C8D; }
+        .empty-state .icon { width: 48px; height: 48px; object-fit: contain; margin-bottom: 10px; }
+
+        @media (max-width: 768px) {
+            .admin-sidebar { transform: translateX(-100%); width: 280px; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 20px; }
+            .admin-hamburger { display: flex; }
+            .admin-header h1 { font-size: 22px; }
+            .banner-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .banner-card .banner-actions { flex-direction: column; }
+            .banner-card .banner-actions .btn { width: 100%; justify-content: center; }
+        }
+
+        body.dark-mode .banner-card { background-color: #122240; border-color: #1A3A5A; }
+body.dark-mode .banner-card .banner-label { color: #E8ECF0; }
+body.dark-mode .banner-card .banner-preview { background-color: #0D1A30; border-color: #1A3A5A; }
+body.dark-mode .banner-card .banner-preview .no-image { color: #7F8C8D; }
+body.dark-mode .banner-card .upload-progress { color: #B0C4DE; }
+body.dark-mode .banner-card .file-input-wrapper { background-color: #0D1A30; }
+body.dark-mode .btn-reset { background-color: #1A3A5A; color: #E8ECF0; }
+body.dark-mode .btn-reset:hover { background-color: #24457A; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-panel">
+        <!-- Sidebar -->
+                 <div class="sidebar-skeleton" aria-hidden="true"><div class="skel-logo"></div><div class="skel-line" style="width:70%;margin:0 auto 24px;"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div></div>
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="logo">
+                <img src="images/new-logo.png" alt="ISSE Logo">
+                <h3>ISSE Admin</h3>
+                <p>Institute of Space Science &amp; Engineering</p>
+            </div>
+            <a href="admin-dashboard.html" class="nav-item" id="navDashboard">
+                <img src="icons/dashboard-icon.png" alt="Dashboard" class="icon"> Dashboard
+            </a>
+            <a href="admin-news.html" class="nav-item" id="navNews">
+                <img src="icons/news-icon-admin.png" alt="News" class="icon"> News Management
+            </a>
+            <a href="admin-subscribers.html" class="nav-item" id="navSubscribers">
+                <img src="icons/subscribers-icon.png" alt="Subscribers" class="icon"> Subscribers
+            </a>
+            <a href="admin-messages.html" class="nav-item" id="navMessages">
+                <img src="icons/messages-icon.png" alt="Messages" class="icon"> Contact Messages
+            </a>
+            <a href="admin-admins.html" class="nav-item" id="navAdmins">
+                <img src="icons/admins-icon.png" alt="Admins" class="icon"> Admin Management
+            </a>
+            <a href="admin-audit.html" class="nav-item" id="navAudit">
+                <img src="icons/audit-icon.png" alt="Audit" class="icon"> Audit Log
+            </a>
+            <a href="admin-banners.html" class="nav-item active" id="navBanners">
+                <img src="icons/banner-icon.png" alt="Banners" class="icon"> Banners
+            </a>
+            <a href="admin-content.html" class="nav-item" id="navContent">
+                <img src="icons/content-icon.png" alt="Content" class="icon"> Site Content
+            </a>
+            <a href="admin-programs.html" class="nav-item" id="navPrograms">
+                <img src="icons/programs-icon.png" alt="Programs" class="icon"> Programs
+            </a>
+            <a href="#" class="nav-item" id="navAcademyPanel">
+    <img src="icons/academy-icon.png" alt="Academy Panel" class="icon"> Academy Panel
+</a>
+            <a href="#" class="nav-item logout" id="logoutBtn">
+                <img src="icons/logout-icon.png" alt="Logout" class="icon"> Logout
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="admin-hamburger" id="adminHamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <h1>Banner Management</h1>
+                </div>
+                <div class="admin-info">
+                    <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+        <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+    </button>
+                    <div class="admin-dropdown">
+                        <button class="admin-dropdown-btn" id="adminDropdownBtn">
+                            <span id="adminNameDisplay">Admin</span>
+                            <span class="role-badge" id="adminRoleDisplay">Super Admin</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="admin-dropdown-menu" id="adminDropdownMenu">
+                            <a href="admin-profile.html" class="dropdown-item">
+                                <span>👤</span> Profile
+                            </a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item" id="logoutDropdownBtn">
+                                <span>🚪</span> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p style="color:#7F8C8D; margin-bottom:20px; font-size:14px;">
+                Upload custom banner images for each page. Images are stored in Supabase Storage.
+            </p>
+
+            <div id="bannerGrid" class="banner-grid">
+                <!-- Banners loaded by JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script>
+        const BANNER_BUCKET = 'site-media';
+        const BANNER_FOLDER = 'banners';
+
+        // Define all pages with banners
+        const BANNER_PAGES = [
+            { page: 'home_hero', label: 'Homepage Hero', defaultImage: 'images/new-hero.jpg' },
+            { page: 'about', label: 'About Page', defaultImage: 'images/about-banner.jpg' },
+            { page: 'programs', label: 'Programs Page', defaultImage: 'images/programs-banner.jpg' },
+            { page: 'admissions', label: 'Admissions Page', defaultImage: 'images/admissions-banner.jpg' },
+            { page: 'news', label: 'News Page', defaultImage: 'images/news-banner.jpg' },
+            { page: 'contact', label: 'Contact Page', defaultImage: 'images/contact-banner.jpg' },
+            { page: 'collaborations', label: 'Collaborations Page', defaultImage: 'images/collaborations-banner.jpg' },
+            { page: 'space_physics', label: 'Space Physics Program', defaultImage: 'images/space-physics.png' },
+            { page: 'geoinformatics', label: 'Geoinformatics Program', defaultImage: 'images/geoinformatics.png' },
+            { page: 'aerospace', label: 'Aerospace Engineering', defaultImage: 'images/aerospace.png' },
+            { page: 'systems', label: 'Systems Engineering', defaultImage: 'images/systems.png' }
+        ];
+
+        let currentAdmin = null;
+        let bannerData = {};
+
+        // ==================== SESSION CHECK ====================
+        initDarkModeToggle();
+        (async function() {
+            const admin = await getCurrentAdmin();
+            if (!admin) {
+                window.location.replace('admin-login.html');
+                return;
+            }
+
+            // All roles can access banners (Super Admin, Admin, Editor)
+            currentAdmin = admin;
+            document.getElementById('adminNameDisplay').textContent = admin.username;
+            document.getElementById('adminRoleDisplay').textContent = admin.role;
+
+            // Show/Hide sidebar items based on role
+            const role = admin.role;
+            document.getElementById('navAcademyPanel').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+document.getElementById('navAcademyPanel').href = ACADEMY_URL;
+            document.getElementById('navSubscribers').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+                        document.getElementById('navMessages').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+            document.getElementById('navAdmins').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+            document.getElementById('navAudit').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+            document.body.classList.add('nav-ready');
+           
+            document.getElementById('navBanners').style.display = 'flex';
+            document.getElementById('navContent').style.display = 'flex';
+            document.getElementById('navPrograms').style.display = 'flex';
+
+            await loadBanners();
+            renderBanners();
+        })();
+
+        // ==================== LOAD BANNERS ====================
+        async function loadBanners() {
+            try {
+                const { data, error } = await db
+                    .from('site_banners')
+                    .select('*');
+
+                if (error) throw error;
+
+                // Convert to object keyed by page
+                bannerData = {};
+                (data || []).forEach(item => {
+                    bannerData[item.page] = item;
+                });
+
+            } catch (error) {
+                console.error('Error loading banners:', error);
+                alert('Error loading banners: ' + error.message);
+            }
+        }
+
+        // ==================== RENDER BANNERS ====================
+        function renderBanners() {
+            const grid = document.getElementById('bannerGrid');
+
+            grid.innerHTML = BANNER_PAGES.map(pageInfo => {
+                const existing = bannerData[pageInfo.page];
+                const imageUrl = existing ? existing.image_url : null;
+                const hasCustom = !!imageUrl;
+                const isUploading = false; // Will be used per-card
+
+                return `
+                    <div class="banner-card" id="banner-${pageInfo.page}">
+                        <div class="banner-label">
+                            <span>${pageInfo.label}</span>
+                            <span class="status-badge ${hasCustom ? '' : 'default'}">
+                                ${hasCustom ? '✅ Custom' : 'Default'}
+                            </span>
+                        </div>
+                        <div class="banner-preview">
+                            ${hasCustom
+                                ? `<img src="${imageUrl}" alt="${pageInfo.label} banner">`
+                                : `<div class="no-image">📷<br>No custom banner<br><span style="font-size:11px;">Using default: ${pageInfo.defaultImage.split('/').pop()}</span></div>`
+                            }
+                        </div>
+                        <div class="banner-actions">
+                            <button class="btn btn-upload" onclick="toggleUpload('${pageInfo.page}')">
+                                📤 Upload
+                            </button>
+                            ${hasCustom
+                                ? `<button class="btn btn-reset" onclick="resetBanner('${pageInfo.page}')">
+                                    🔄 Reset to Default
+                                </button>`
+                                : ''
+                            }
+                        </div>
+                        <div class="file-input-wrapper" id="upload-${pageInfo.page}">
+                            <input type="file" id="file-${pageInfo.page}" accept="image/*" onchange="handleFileSelect('${pageInfo.page}')">
+                            <div style="margin-top:8px;">
+                                <button class="btn btn-upload-file" id="upload-btn-${pageInfo.page}" onclick="uploadBanner('${pageInfo.page}')" disabled>
+                                    ⬆ Upload Image
+                                </button>
+                            </div>
+                            <div class="upload-progress" id="progress-${pageInfo.page}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== TOGGLE UPLOAD ====================
+        function toggleUpload(page) {
+            const wrapper = document.getElementById(`upload-${page}`);
+            const isVisible = wrapper.classList.contains('visible');
+
+            // Close all upload wrappers first
+            document.querySelectorAll('.file-input-wrapper').forEach(el => el.classList.remove('visible'));
+
+            if (!isVisible) {
+                wrapper.classList.add('visible');
+                document.getElementById(`file-${page}`).value = '';
+                document.getElementById(`upload-btn-${page}`).disabled = true;
+                document.getElementById(`progress-${page}`).textContent = '';
+            }
+        }
+
+        // ==================== HANDLE FILE SELECT ====================
+        function handleFileSelect(page) {
+            const fileInput = document.getElementById(`file-${page}`);
+            const uploadBtn = document.getElementById(`upload-btn-${page}`);
+            const progress = document.getElementById(`progress-${page}`);
+
+            if (fileInput.files && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if (file.size > 5 * 1024 * 1024) {
+                    progress.textContent = '❌ File too large. Max 5MB.';
+                    progress.style.color = '#E74C3C';
+                    uploadBtn.disabled = true;
+                    return;
+                }
+                progress.textContent = `✅ ${file.name} (${(file.size / 1024).toFixed(0)}KB)`;
+                progress.style.color = '#27AE60';
+                uploadBtn.disabled = false;
+            } else {
+                uploadBtn.disabled = true;
+                progress.textContent = '';
+            }
+        }
+
+        // ==================== UPLOAD BANNER ====================
+        async function uploadBanner(page) {
+            const fileInput = document.getElementById(`file-${page}`);
+            const uploadBtn = document.getElementById(`upload-btn-${page}`);
+            const progress = document.getElementById(`progress-${page}`);
+
+            if (!fileInput.files || !fileInput.files.length) {
+                progress.textContent = '❌ Please select a file.';
+                progress.style.color = '#E74C3C';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '⏳ Uploading...';
+            progress.textContent = 'Uploading...';
+            progress.style.color = '#D4A843';
+
+            try {
+                // Generate a unique filename
+                const fileExt = file.name.split('.').pop();
+                const fileName = `banner-${page}-${Date.now()}.${fileExt}`;
+                const filePath = `${BANNER_FOLDER}/${fileName}`;
+
+                // Upload to Supabase Storage
+                const { data, error } = await db.storage
+                    .from(BANNER_BUCKET)
+                    .upload(filePath, file);
+
+                if (error) throw error;
+
+                // Get public URL
+                const { data: urlData } = db.storage
+                    .from(BANNER_BUCKET)
+                    .getPublicUrl(filePath);
+
+                const publicUrl = urlData.publicUrl;
+
+                // Save to database
+                const { error: dbError } = await db
+                    .from('site_banners')
+                    .upsert({
+                        page: page,
+                        image_url: publicUrl,
+                        updated_at: new Date()
+                    }, { onConflict: 'page' });
+
+                if (dbError) throw dbError;
+
+                // Log activity
+                await logActivity(`Updated banner: ${page}`, currentAdmin);
+
+                progress.textContent = '✅ Upload successful!';
+                progress.style.color = '#27AE60';
+                uploadBtn.textContent = '✅ Done';
+
+                // Refresh banners
+                await loadBanners();
+                renderBanners();
+
+            } catch (error) {
+                console.error('Upload error:', error);
+                progress.textContent = `❌ Error: ${error.message}`;
+                progress.style.color = '#E74C3C';
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '⬆ Upload Image';
+            }
+        }
+
+        // ==================== RESET BANNER ====================
+        async function resetBanner(page) {
+            if (!confirm(`Reset ${page} banner to default?`)) return;
+
+            try {
+                // Get existing banner to delete the image file
+                const { data: existing } = await db
+                    .from('site_banners')
+                    .select('image_url')
+                    .eq('page', page)
+                    .single();
+
+                if (existing && existing.image_url) {
+                    // Extract filename from URL and delete from storage
+                    try {
+                        const url = new URL(existing.image_url);
+                        const pathParts = url.pathname.split('/');
+                        const bucketIndex = pathParts.indexOf('site-media');
+                        if (bucketIndex !== -1) {
+                            const filePath = pathParts.slice(bucketIndex + 1).join('/');
+                            await db.storage.from(BANNER_BUCKET).remove([filePath]);
+                        }
+                    } catch (e) {
+                        console.warn('Could not delete file from storage:', e);
+                    }
+                }
+
+                // Delete from database
+                const { error } = await db
+                    .from('site_banners')
+                    .delete()
+                    .eq('page', page);
+
+                if (error) throw error;
+
+                // Log activity
+                await logActivity(`Reset banner to default: ${page}`, currentAdmin);
+
+                // Refresh
+                await loadBanners();
+                renderBanners();
+                alert('✅ Banner reset to default successfully!');
+
+            } catch (error) {
+                console.error('Reset error:', error);
+                alert('Error resetting banner: ' + error.message);
+            }
+        }
+
+        // ==================== ADMIN DROPDOWN ====================
+        const dropdownBtn = document.getElementById('adminDropdownBtn');
+        const dropdownMenu = document.getElementById('adminDropdownMenu');
+
+        if (dropdownBtn && dropdownMenu) {
+            dropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                dropdownMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownBtn.classList.remove('active');
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+
+            const logoutDropdownBtn = document.getElementById('logoutDropdownBtn');
+            if (logoutDropdownBtn) {
+                logoutDropdownBtn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    await logActivity('Logout', currentAdmin, {});
+                                    await db.auth.signOut();
+                window.location.replace('admin-login.html');
+                });
+            }
+        }
+
+        // ==================== HAMBURGER TOGGLE ====================
+        document.getElementById('adminHamburger').addEventListener('click', function() {
+            document.getElementById('adminSidebar').classList.toggle('open');
+        });
+
+        // ==================== LOGOUT ====================
+        document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            await logActivity('Logout', currentAdmin, {});
+                            await db.auth.signOut();
+                window.location.replace('admin-login.html');
+        });
+
+        // ==================== MAKE FUNCTIONS GLOBAL ====================
+        window.toggleUpload = toggleUpload;
+        window.handleFileSelect = handleFileSelect;
+        window.uploadBanner = uploadBanner;
+        window.resetBanner = resetBanner;
+    </script>
+</body>
+</html>

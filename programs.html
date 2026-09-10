@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programs - Institute of Space Science & Engineering</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+<link rel="manifest" href="manifest.json">
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ==================== HEADER / NAVIGATION ==================== -->
+<header>
+    <div class="container">
+        <div class="header-left">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="images/new-logo.png" alt="ISSE Logo" class="logo-img">
+                </a>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="programs.html">Programs</a></li>
+                    <li><a href="admissions.html">Admissions</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="collaborations.html">Collaborations</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+        <div class="header-right">
+            <a href="https://isse.edu.ng:2096/" target="_blank" class="btn-staff-mail-header">Staff Mail</a>
+            <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+                <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+            </button>
+        </div>
+    </div>
+</header>
+
+    <!-- ==================== PAGE BANNER ==================== -->
+    <section class="page-banner programs-banner" data-banner-page="programs">
+        <div class="page-banner-overlay"></div>
+        <div class="container page-banner-content">
+            <h1 data-content-key="programs_page_title">Our Postgraduate Programs</h1>
+            <p class="banner-subtitle" data-content-key="programs_page_subtitle">NUC-accredited M.Sc. and Ph.D. programs in space science and engineering</p>
+        </div>
+    </section>
+
+<!-- ==================== PROGRAMS GRID ==================== -->
+<section class="programs-page">
+    <div class="container">
+        <div class="programs-page-grid">
+            <!-- Program 1: Space Physics -->
+            <div class="program-page-card">
+                <div class="program-page-image">
+                    <img src="images/space-physics.png" alt="Space Physics">
+                </div>
+                <div class="program-page-content">
+                    <h3>Space Physics</h3>
+                    <p data-program-blurb="space-physics">The Space Science program covers a broad range of disciplines, from meteorology and geology, to lunar, solar, and planetary science, to astronomy and astrophysics, to the life sciences.</p>
+                    <div class="program-details">
+                        <span><strong>Duration:</strong> 18 months (MSc) | 3 years (PhD)</span>
+                    </div>
+                    <a href="space-physics.html" class="btn btn-primary">Learn More →</a>
+                </div>
+            </div>
+
+            <!-- Program 2: Geoinformatics and GIS -->
+            <div class="program-page-card">
+                <div class="program-page-image">
+                    <img src="images/geoinformatics.png" alt="Geoinformatics and GIS">
+                </div>
+                <div class="program-page-content">
+                    <h3>Geoinformatics and GIS</h3>
+                    <p data-program-blurb="geoinformatics">The Geoinformatics program at ISSE involves teaching, research and hands-on training on the use and appreciation of different tools for different tasks performed from theory to practice.</p>
+                    <div class="program-details">
+                        <span><strong>Duration:</strong> 18 months (MSc) | 3 years (PhD)</span>
+                    </div>
+                    <a href="geoinformatics.html" class="btn btn-primary">Learn More →</a>
+                </div>
+            </div>
+
+            <!-- Program 3: Aerospace Engineering -->
+            <div class="program-page-card">
+                <div class="program-page-image">
+                    <img src="images/aerospace.png" alt="Aerospace Engineering">
+                </div>
+                <div class="program-page-content">
+                    <h3>Aerospace Engineering</h3>
+                    <p data-program-blurb="aerospace-engineering">The Aerospace Engineering Program at ISSE is concerned with advanced training, research and innovation development of aircraft, spacecraft, and satellite system engineering.</p>
+                    <div class="program-details">
+                        <span><strong>Duration:</strong> 18 months (MSc) | 3 years (PhD)</span>
+                    </div>
+                    <a href="aerospace-engineering.html" class="btn btn-primary">Learn More →</a>
+                </div>
+            </div>
+
+            <!-- Program 4: Systems Engineering -->
+            <div class="program-page-card">
+                <div class="program-page-image">
+                    <img src="images/systems.png" alt="Systems Engineering">
+                </div>
+                <div class="program-page-content">
+                    <h3>Systems Engineering</h3>
+                    <p data-program-blurb="systems-engineering">Systems engineering enables building, analyzing and managing a system—be it electrical, mechanical, chemical, biological or one involving business processes and logistics.</p>
+                    <div class="program-details">
+                        <span><strong>Duration:</strong> 18 months (MSc) | 3 years (PhD)</span>
+                    </div>
+                    <a href="systems-engineering.html" class="btn btn-primary">Learn More →</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Apply Now Button -->
+        <div class="programs-page-cta">
+            <a href="admissions.html" class="btn btn-primary btn-large">Apply Now</a>
+        </div>
+    </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+    <!-- Decorative night sky. Animated entirely in CSS -->
+    <div class="footer-sky" aria-hidden="true">
+        <div class="star-layer star-layer-1"></div>
+        <div class="star-layer star-layer-2"></div>
+        <div class="star-layer star-layer-3"></div>
+        <span class="shooting-star shooting-star-1"></span>
+        <span class="shooting-star shooting-star-2"></span>
+        <span class="shooting-star shooting-star-3"></span>
+    </div>
+
+    <div class="container">
+        <div class="footer-grid">
+            <!-- Column 1: About -->
+            <div class="footer-about">
+                <img src="images/new-logo.png" alt="ISSE Logo" class="footer-logo-img">
+                <p>Institute of Space Science & Engineering — Advancing space science education and research in Nigeria and the African continent.</p>
+                <div class="footer-partner">
+                    <img src="images/aust-logo.png" alt="AUST Logo" class="footer-partner-logo">
+                    <p>African University of Science and Technology — A pan-African centre of excellence in science and technology.</p>
+                </div>
+                <div class="footer-partner">
+                    <img src="images/nasrda-logo.png" alt="NASRDA Logo" class="footer-partner-logo">
+                    <p>National Space Research and Development Agency — Pioneering Nigeria's space science and technology development.</p>
+                </div>
+            </div>
+
+            <!-- Column 2: Quick Links -->
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="programs.html">Programs</a></li>
+                    <li><a href="admissions.html">Admissions</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="collaborations.html">Collaborations</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+                <div class="footer-staff-mail">
+                    <a href="https://isse.edu.ng:2096/" target="_blank" class="btn btn-staff-mail">Staff Mail</a>
+                </div>
+            </div>
+
+            <!-- Column 3 & 4: Contact Us + Follow Us side by side, Newsletter underneath -->
+            <div class="footer-contact-social-wrapper">
+                <div class="footer-contact-social-row">
+                    <div class="footer-contact">
+                        <h4>Contact Us</h4>
+                        <ul>
+                            <li class="contact-location">
+                                <img src="icons/location.png" alt="Location" class="footer-contact-icon">
+                                Obasanjo Space Centre, Km 17, Airport Road, Lugbe, Abuja
+                            </li>
+                            <li class="contact-email">
+                                <img src="icons/email.png" alt="Email" class="footer-contact-icon">
+                                admissions@isse.edu.ng
+                            </li>
+                            <li class="contact-phone">
+                                <img src="icons/phone.png" alt="Phone" class="footer-contact-icon">
+                                +234(0)9035652894
+                            </li>
+                        </ul>
+                    </div>
+
+                                        <div class="footer-social">
+                        <h4>Follow Us</h4>
+                        <div class="social-icons">
+                            <a href="https://www.facebook.com/p/Institute-of-Space-Science-and-Engineering-Abuja-100057449769077/" target="_blank" rel="noopener"><img src="icons/facebook.png" alt="Facebook"></a>
+                            <a href="https://www.instagram.com/isse_nasrda/" target="_blank" rel="noopener"><img src="icons/instagram.png" alt="Instagram"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Newsletter spans across both Contact Us and Follow Us -->
+                <div class="footer-newsletter">
+                    <h4>Subscribe to Our Newsletter</h4>
+                    <p>Get the latest news from ISSE delivered to your inbox</p>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" id="newsletterEmail" placeholder="your.name@example.com" aria-label="Your email address" autocomplete="email" required>
+                        <button type="submit" id="newsletterButton">Subscribe</button>
+                    </form>
+                    <p class="newsletter-note" id="newsletterNote" role="status" aria-live="polite"></p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 Institute of Space Science and Engineering. All rights reserved.</p>
+            <p class="footer-bottom-links">
+                <a href="privacy-policy.html">Privacy Policy</a>
+            </p>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

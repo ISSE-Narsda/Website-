@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - ISSE</title>
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .admin-panel { display: flex; min-height: 100vh; background-color: #F5F7FA; }
+        .admin-sidebar { width: 260px; background-color: #0B1A3A; color: #FFFFFF; padding: 20px 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+        .admin-sidebar .logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; text-align: center; }
+        .admin-sidebar .logo img { height: 45px; width: auto; margin: 0 auto 8px; }
+        .admin-sidebar .logo h3 { font-size: 16px; color: #FFFFFF; margin: 0; }
+        .admin-sidebar .logo p { font-size: 12px; color: #B0C4DE; margin: 0; }
+        
+        .admin-sidebar .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: #B0C4DE;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .admin-sidebar .nav-item:hover { background-color: rgba(255,255,255,0.05); color: #FFFFFF; }
+        .admin-sidebar .nav-item.active { background-color: rgba(212,168,67,0.1); color: #D4A843; border-left-color: #D4A843; }
+        .admin-sidebar .nav-item .icon { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+        .admin-sidebar .nav-item.logout { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+        .admin-sidebar .nav-item.logout .icon { filter: brightness(0) saturate(100%) invert(48%) sepia(71%) saturate(423%) hue-rotate(340deg) brightness(95%) contrast(94%); }
+        .admin-sidebar .nav-item.logout:hover { background-color: rgba(231,76,60,0.1); }
+        
+        .admin-main { margin-left: 260px; padding: 30px; flex: 1; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #E8ECF0; }
+        .admin-header h1 { font-size: 28px; color: #0B1A3A; margin: 0; }
+        .admin-header .admin-info { display: flex; align-items: center; gap: 15px; font-size: 14px; color: #2C3E50; }
+        .admin-header .admin-info .role-badge { background-color: #D4A843; color: #0B1A3A; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .admin-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; background: none; border: none; }
+        .admin-hamburger span { display: block; width: 25px; height: 3px; background-color: #0B1A3A; border-radius: 3px; }
+
+        .stats-grid-admin { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+        .stat-card-admin { background: #FFFFFF; padding: 25px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); text-align: center; transition: all 0.3s ease; }
+        .stat-card-admin:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+        .stat-card-admin .number { font-family: 'Poppins', sans-serif; font-size: 36px; font-weight: 800; color: #0B1A3A; }
+        .stat-card-admin .label { font-size: 14px; color: #7F8C8D; margin: 5px 0 0; }
+        .stat-card-admin .stat-icon { width: 32px; height: 32px; object-fit: contain; margin-bottom: 5px; }
+
+        .recent-activity { background: #FFFFFF; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); }
+        .recent-activity h3 { font-size: 18px; color: #0B1A3A; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .recent-activity h3 img { width: 20px; height: 20px; object-fit: contain; }
+        .recent-activity .activity-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #F5F7FA; font-size: 14px; color: #2C3E50; }
+        .recent-activity .activity-item:last-child { border-bottom: none; }
+        .recent-activity .activity-item .time { color: #7F8C8D; font-size: 12px; }
+
+        /* Admin Dropdown */
+        .admin-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .admin-dropdown-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            color: #2C3E50;
+            font-family: 'Inter', sans-serif;
+        }
+        .admin-dropdown-btn:hover { background-color: rgba(0,0,0,0.05); }
+        .dropdown-arrow { font-size: 10px; transition: transform 0.3s ease; }
+        .admin-dropdown-btn.active .dropdown-arrow { transform: rotate(180deg); }
+        .admin-dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 110%;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            min-width: 180px;
+            padding: 8px 0;
+            z-index: 1000;
+            border: 1px solid #E8ECF0;
+        }
+        .admin-dropdown-menu.show { display: block; }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            color: #2C3E50;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .dropdown-item:hover { background-color: #F5F7FA; }
+        .dropdown-divider { border: none; border-top: 1px solid #E8ECF0; margin: 4px 12px; }
+
+        @media (max-width: 992px) { .stats-grid-admin { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) {
+            .admin-sidebar { transform: translateX(-100%); width: 280px; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 20px; }
+            .admin-hamburger { display: flex; }
+            .admin-header h1 { font-size: 22px; }
+            .stats-grid-admin { grid-template-columns: 1fr 1fr; gap: 15px; }
+        }
+        @media (max-width: 480px) { .stats-grid-admin { grid-template-columns: 1fr; } }
+    </style>
+   
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div class="admin-panel">
+                <div class="sidebar-skeleton" aria-hidden="true"><div class="skel-logo"></div><div class="skel-line" style="width:70%;margin:0 auto 24px;"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div></div>
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="logo">
+                <img src="images/new-logo.png" alt="ISSE Logo">
+                <h3>ISSE Admin</h3>
+                <p>Institute of Space Science & Engineering</p>
+            </div>
+            <a href="admin-dashboard.html" class="nav-item active">
+                <img src="icons/dashboard-icon.png" alt="Dashboard" class="icon"> Dashboard
+            </a>
+            <a href="admin-news.html" class="nav-item" id="navNews">
+                <img src="icons/news-icon-admin.png" alt="News" class="icon"> News Management
+            </a>
+            <a href="admin-subscribers.html" class="nav-item" id="navSubscribers">
+                <img src="icons/subscribers-icon.png" alt="Subscribers" class="icon"> Subscribers
+            </a>
+            <a href="admin-messages.html" class="nav-item" id="navMessages">
+                <img src="icons/messages-icon.png" alt="Messages" class="icon"> Contact Messages
+            </a>
+
+            <a href="admin-admins.html" class="nav-item" id="navAdmins">
+                <img src="icons/admins-icon.png" alt="Admins" class="icon"> Admin Management
+            </a>
+            <a href="admin-audit.html" class="nav-item" id="navAudit">
+                <img src="icons/audit-icon.png" alt="Audit" class="icon"> Audit Log
+            </a>
+            <a href="admin-banners.html" class="nav-item" id="navBanners">
+    <img src="icons/banner-icon.png" alt="Banners" class="icon"> Banners
+</a>
+<a href="admin-content.html" class="nav-item" id="navContent">
+    <img src="icons/content-icon.png" alt="Content" class="icon"> Site Content
+</a>
+<a href="admin-programs.html" class="nav-item" id="navPrograms">
+    <img src="icons/programs-icon.png" alt="Programs" class="icon"> Programs
+</a>
+<a href="#" class="nav-item" id="navAcademyPanel">
+    <img src="icons/academy-icon.png" alt="Academy Panel" class="icon"> Academy Panel
+</a>
+            <a href="#" class="nav-item logout" id="logoutBtn">
+                <img src="icons/logout-icon.png" alt="Logout" class="icon"> Logout
+            </a>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="admin-hamburger" id="adminHamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <h1>Dashboard</h1>
+                </div>
+                <div class="admin-info">
+                    <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+        <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+    </button>
+                    <div class="admin-dropdown">
+                        <button class="admin-dropdown-btn" id="adminDropdownBtn">
+                            <span id="adminNameDisplay">Admin</span>
+                            <span class="role-badge" id="adminRoleDisplay">Super Admin</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="admin-dropdown-menu" id="adminDropdownMenu">
+                            <a href="admin-profile.html" class="dropdown-item">
+                                <span>👤</span> Profile
+                            </a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item" id="logoutDropdownBtn">
+                                <span>🚪</span> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid-admin">
+                <div class="stat-card-admin">
+                    <img src="icons/news-icon-admin.png" alt="News" class="stat-icon">
+                    <div class="number" id="totalNews">0</div>
+                    <p class="label">Total News Articles</p>
+                </div>
+                <div class="stat-card-admin" id="messagesStat">
+                    <img src="icons/messages-icon.png" alt="Messages" class="stat-icon">
+                    <div class="number" id="totalMessages">0</div>
+                    <p class="label">Contact Messages</p>
+                </div>
+                <div class="stat-card-admin" id="adminsStat">
+                    <img src="icons/admins-icon.png" alt="Admins" class="stat-icon">
+                    <div class="number" id="totalAdmins">0</div>
+                    <p class="label">Admin Users</p>
+                </div>
+                <div class="stat-card-admin">
+                    <img src="icons/calendar-icon.png" alt="Date" class="stat-icon">
+                    <div class="number" id="todayDate">-</div>
+                    <p class="label">Today's Date</p>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h3><img src="icons/clipboard-icon.png" alt="Activity"> Recent Activity</h3>
+                <div id="activityLog">
+                    <div class="activity-item">
+                        <span>No recent activity</span>
+                        <span class="time">-</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+<script src="supabase-config.js"></script>
+<script>
+    // ==================== DASHBOARD ====================
+    let currentAdmin = null;
+
+    // Check if admin is logged in using Supabase Auth
+        initDarkModeToggle();
+        (async function() {
+        currentAdmin = await getCurrentAdmin();
+        if (!currentAdmin) {
+            window.location.replace('admin-login.html');
+            return;
+        }
+
+        // Update header with admin info
+        document.getElementById('adminNameDisplay').textContent = currentAdmin.username;
+        document.getElementById('adminRoleDisplay').textContent = currentAdmin.role;
+
+        
+        // Show/Hide sidebar items based on role
+        const role = currentAdmin.role;
+        document.getElementById('navAcademyPanel').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+document.getElementById('navAcademyPanel').href = ACADEMY_URL;
+        document.getElementById('navSubscribers').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+                    document.getElementById('navMessages').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+        document.getElementById('navAdmins').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+        document.getElementById('navAudit').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+        document.body.classList.add('nav-ready');
+       
+
+        // Set today's date
+        document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+        });
+
+        // Load stats
+        await loadStats();
+        await loadActivityLog();
+    })();
+
+    async function loadStats() {
+        try {
+            const admin = await getCurrentAdmin();
+            const role = admin ? admin.role : 'Editor';
+
+            // Load news count (visible to all)
+            const { count: newsCount } = await db.from('news').select('*', { count: 'exact', head: true });
+            document.getElementById('totalNews').textContent = newsCount || 0;
+
+            // Load messages count (Super Admin and Admin only)
+            if (role === 'Super Admin' || role === 'Admin') {
+                document.getElementById('messagesStat').style.display = 'block';
+                const { count: msgCount } = await db.from('contact_messages').select('*', { count: 'exact', head: true });
+                document.getElementById('totalMessages').textContent = msgCount || 0;
+            } else {
+                document.getElementById('messagesStat').style.display = 'none';
+            }
+
+            // Load admins count (Super Admin only)
+            if (role === 'Super Admin') {
+                document.getElementById('adminsStat').style.display = 'block';
+                const { count: adminCount } = await db.from('admin_profiles').select('*', { count: 'exact', head: true });
+                document.getElementById('totalAdmins').textContent = adminCount || 0;
+            } else {
+                document.getElementById('adminsStat').style.display = 'none';
+            }
+
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    async function loadActivityLog() {
+    try {
+        const container = document.getElementById('activityLog');
+        const { data: activities, error } = await db
+            .from('activity_log')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        if (error) throw error;
+
+        if (!activities || !activities.length) {
+            container.innerHTML = '<div class="activity-item"><span>No recent activity</span><span class="time">-</span></div>';
+            return;
+        }
+
+        container.innerHTML = activities.map(a =>
+            `<div class="activity-item"><span>${escapeHtml(a.action)} — ${escapeHtml(a.admin_email || 'Unknown')}</span><span class="time">${formatTimestamp(a.created_at)}</span></div>`
+        ).join('');
+    } catch (error) {
+        console.error('Error loading activity log:', error);
+    }
+}
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    // ==================== ADMIN DROPDOWN ====================
+    const dropdownBtn = document.getElementById('adminDropdownBtn');
+    const dropdownMenu = document.getElementById('adminDropdownMenu');
+
+    if (dropdownBtn && dropdownMenu) {
+        dropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('active');
+            dropdownMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownBtn.classList.remove('active');
+                dropdownMenu.classList.remove('show');
+            }
+        });
+
+                const logoutDropdownBtn = document.getElementById('logoutDropdownBtn');
+        if (logoutDropdownBtn) {
+            logoutDropdownBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                await logActivity('Logout', currentAdmin, {});
+                                await db.auth.signOut();
+                window.location.replace('admin-login.html');
+            });
+        }
+    }
+
+    // Hamburger toggle
+    document.getElementById('adminHamburger').addEventListener('click', function() {
+        document.getElementById('adminSidebar').classList.toggle('open');
+    });
+
+    // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+        e.preventDefault();
+        await logActivity('Logout', currentAdmin, {});
+                        await db.auth.signOut();
+                window.location.replace('admin-login.html');
+    });
+</script>
+</body>
+</html>

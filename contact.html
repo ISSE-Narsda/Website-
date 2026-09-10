@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - Institute of Space Science & Engineering</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+<link rel="manifest" href="manifest.json">
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ==================== HEADER / NAVIGATION ==================== -->
+<header>
+    <div class="container">
+        <div class="header-left">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="images/new-logo.png" alt="ISSE Logo" class="logo-img">
+                </a>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="programs.html">Programs</a></li>
+                    <li><a href="admissions.html">Admissions</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="collaborations.html">Collaborations</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+        <div class="header-right">
+            <a href="https://isse.edu.ng:2096/" target="_blank" class="btn-staff-mail-header">Staff Mail</a>
+            <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+                <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+            </button>
+        </div>
+    </div>
+</header>
+
+    <!-- ==================== PAGE BANNER ==================== -->
+    <section class="page-banner contact-banner" data-banner-page="contact">
+        <div class="page-banner-overlay"></div>
+        <div class="container page-banner-content">
+            <h1 data-content-key="contact_page_title">Contact Us</h1>
+            <p class="banner-subtitle" data-content-key="contact_page_subtitle">Reach out to us for inquiries and support</p>
+        </div>
+    </section>
+
+    <!-- ==================== CONTACT CONTENT ==================== -->
+    <section class="contact-page">
+        <div class="container">
+            <div class="contact-grid">
+                <!-- Contact Form -->
+                <div class="contact-form">
+                    <h2 data-content-key="contact_form_title">Send Us a Message</h2>
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" placeholder="Enter your full name" required>
+                            <span class="error-message" id="nameError">Please enter your full name</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" placeholder="Enter your email address" required>
+                            <span class="error-message" id="emailError">Please enter a valid email address</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" placeholder="Enter your phone number">
+                        </div>
+                        <div class="form-group">
+                            <label for="program">Program of Interest</label>
+                            <select id="program">
+                                <option value="">Select Your Program of Interest</option>
+                                <option value="Space Physics">Space Physics</option>
+                                <option value="Geoinformatics and GIS">Geoinformatics and GIS</option>
+                                <option value="Aerospace Engineering">Aerospace Engineering</option>
+                                <option value="Systems Engineering">Systems Engineering</option>
+                                <option value="">None</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Your Message</label>
+                            <textarea id="message" rows="5" placeholder="Write your message here..." required></textarea>
+                            <span class="error-message" id="messageError">Please enter a message (minimum 10 characters)</span>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send Enquiry</button>
+                    </form>
+                    <div id="successMessage" class="success-message">
+                        <p>✅ Thank you for your enquiry! Our admissions team will get back to you shortly.</p>
+                    </div>
+                </div>
+
+                <!-- Contact Information & Socials -->
+                <div class="contact-info-wrapper">
+                    <div class="contact-info">
+                        <h2 data-content-key="contact_info_title">Contact Information</h2>
+                        <div class="contact-info-item">
+                            <img src="icons/location.png" alt="Location" class="contact-info-icon">
+                            <div>
+                                <h4>Address</h4>
+                                <p>Obasanjo Space Centre, Km 17, Airport Road, Lugbe, Abuja</p>
+                            </div>
+                        </div>
+                        <div class="contact-info-item">
+                            <img src="icons/email.png" alt="Email" class="contact-info-icon">
+                            <div>
+                                <h4>Email</h4>
+                                <p>admissions@isse.edu.ng</p>
+                            </div>
+                        </div>
+                        <div class="contact-info-item">
+                            <img src="icons/phone.png" alt="Phone" class="contact-info-icon">
+                            <div>
+                                <h4>Phone</h4>
+                                <p>+234(0)9035652894</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Our Socials -->
+                                        <div class="contact-socials">
+                        <h2 data-content-key="contact_socials_title">Our Socials</h2>
+                        <a href="https://www.facebook.com/p/Institute-of-Space-Science-and-Engineering-Abuja-100057449769077/" target="_blank" rel="noopener" class="social-item">
+                            <img src="icons/facebook.png" alt="Facebook" class="social-icon">
+                            <span>Facebook</span>
+                        </a>
+                        <a href="https://www.instagram.com/isse_nasrda/" target="_blank" rel="noopener" class="social-item">
+                            <img src="icons/instagram.png" alt="Instagram" class="social-icon">
+                            <span>Instagram</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Google Map Section -->
+            <div class="contact-map">
+                <h2 data-content-key="contact_map_title">Find Us</h2>
+                <div class="map-container">
+                    <iframe
+                        src="https://www.google.com/maps?q=8.99094,7.38576&z=17&output=embed"
+                        width="100%"
+                        height="350"
+                        style="border:0;"
+                        allowfullscreen=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+    <!-- Decorative night sky. Animated entirely in CSS -->
+    <div class="footer-sky" aria-hidden="true">
+        <div class="star-layer star-layer-1"></div>
+        <div class="star-layer star-layer-2"></div>
+        <div class="star-layer star-layer-3"></div>
+        <span class="shooting-star shooting-star-1"></span>
+        <span class="shooting-star shooting-star-2"></span>
+        <span class="shooting-star shooting-star-3"></span>
+    </div>
+
+    <div class="container">
+        <div class="footer-grid">
+            <!-- Column 1: About -->
+            <div class="footer-about">
+                <img src="images/new-logo.png" alt="ISSE Logo" class="footer-logo-img">
+                <p>Institute of Space Science & Engineering — Advancing space science education and research in Nigeria and the African continent.</p>
+                <div class="footer-partner">
+                    <img src="images/aust-logo.png" alt="AUST Logo" class="footer-partner-logo">
+                    <p>African University of Science and Technology — A pan-African centre of excellence in science and technology.</p>
+                </div>
+                <div class="footer-partner">
+                    <img src="images/nasrda-logo.png" alt="NASRDA Logo" class="footer-partner-logo">
+                    <p>National Space Research and Development Agency — Pioneering Nigeria's space science and technology development.</p>
+                </div>
+            </div>
+
+            <!-- Column 2: Quick Links -->
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="programs.html">Programs</a></li>
+                    <li><a href="admissions.html">Admissions</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="collaborations.html">Collaborations</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+                <div class="footer-staff-mail">
+                    <a href="https://isse.edu.ng:2096/" target="_blank" class="btn btn-staff-mail">Staff Mail</a>
+                </div>
+            </div>
+
+            <!-- Column 3 & 4: Contact Us + Follow Us side by side, Newsletter underneath -->
+            <div class="footer-contact-social-wrapper">
+                <div class="footer-contact-social-row">
+                    <div class="footer-contact">
+                        <h4>Contact Us</h4>
+                        <ul>
+                            <li class="contact-location">
+                                <img src="icons/location.png" alt="Location" class="footer-contact-icon">
+                                Obasanjo Space Centre, Km 17, Airport Road, Lugbe, Abuja
+                            </li>
+                            <li class="contact-email">
+                                <img src="icons/email.png" alt="Email" class="footer-contact-icon">
+                                admissions@isse.edu.ng
+                            </li>
+                            <li class="contact-phone">
+                                <img src="icons/phone.png" alt="Phone" class="footer-contact-icon">
+                                +234(0)9035652894
+                            </li>
+                        </ul>
+                    </div>
+
+                                        <div class="footer-social">
+                        <h4>Follow Us</h4>
+                        <div class="social-icons">
+                            <a href="https://www.facebook.com/p/Institute-of-Space-Science-and-Engineering-Abuja-100057449769077/" target="_blank" rel="noopener"><img src="icons/facebook.png" alt="Facebook"></a>
+                            <a href="https://www.instagram.com/isse_nasrda/" target="_blank" rel="noopener"><img src="icons/instagram.png" alt="Instagram"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Newsletter spans across both Contact Us and Follow Us -->
+                <div class="footer-newsletter">
+                    <h4>Subscribe to Our Newsletter</h4>
+                    <p>Get the latest news from ISSE delivered to your inbox</p>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" id="newsletterEmail" placeholder="your.name@example.com" aria-label="Your email address" autocomplete="email" required>
+                        <button type="submit" id="newsletterButton">Subscribe</button>
+                    </form>
+                    <p class="newsletter-note" id="newsletterNote" role="status" aria-live="polite"></p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 Institute of Space Science and Engineering. All rights reserved.</p>
+            <p class="footer-bottom-links">
+                <a href="privacy-policy.html">Privacy Policy</a>
+            </p>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

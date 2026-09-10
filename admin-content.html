@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Content - ISSE Admin</title>
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .admin-panel { display: flex; min-height: 100vh; background-color: #F5F7FA; }
+        .admin-sidebar { width: 260px; background-color: #0B1A3A; color: #FFFFFF; padding: 20px 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+        .admin-sidebar .logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; text-align: center; }
+        .admin-sidebar .logo img { height: 45px; width: auto; margin: 0 auto 8px; }
+        .admin-sidebar .logo h3 { font-size: 16px; color: #FFFFFF; margin: 0; }
+        .admin-sidebar .logo p { font-size: 12px; color: #B0C4DE; margin: 0; }
+        .admin-sidebar .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #B0C4DE; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; font-size: 14px; font-weight: 500; }
+        .admin-sidebar .nav-item:hover { background-color: rgba(255,255,255,0.05); color: #FFFFFF; }
+        .admin-sidebar .nav-item.active { background-color: rgba(212,168,67,0.1); color: #D4A843; border-left-color: #D4A843; }
+        .admin-sidebar .nav-item .icon { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+        .admin-sidebar .nav-item.logout { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+        .admin-sidebar .nav-item.logout .icon { filter: brightness(0) saturate(100%) invert(48%) sepia(71%) saturate(423%) hue-rotate(340deg) brightness(95%) contrast(94%); }
+        .admin-sidebar .nav-item.logout:hover { background-color: rgba(231,76,60,0.1); }
+        .admin-main { margin-left: 260px; padding: 30px; flex: 1; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #E8ECF0; }
+        .admin-header h1 { font-size: 28px; color: #0B1A3A; margin: 0; }
+        .admin-header .admin-info { display: flex; align-items: center; gap: 15px; font-size: 14px; color: #2C3E50; }
+        .admin-header .admin-info .role-badge { background-color: #D4A843; color: #0B1A3A; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .admin-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; background: none; border: none; }
+        .admin-hamburger span { display: block; width: 25px; height: 3px; background-color: #0B1A3A; border-radius: 3px; }
+
+        .content-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .content-controls select {
+            padding: 10px 20px;
+            border: 1px solid #E8ECF0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            min-width: 200px;
+            cursor: pointer;
+        }
+
+        .content-controls select:focus {
+            outline: none;
+            border-color: #D4A843;
+        }
+
+        .content-controls .btn {
+            padding: 10px 25px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+        }
+
+        .btn-save {
+            background-color: #D4A843;
+            color: #0B1A3A;
+        }
+
+        .btn-save:hover {
+            background-color: #C49A3A;
+            transform: translateY(-2px);
+        }
+
+        .btn-save:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .content-fields {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+
+        .content-fields .field-group {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #F5F7FA;
+        }
+
+        .content-fields .field-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .content-fields .field-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0B1A3A;
+            margin-bottom: 6px;
+        }
+
+        .content-fields .field-group .field-hint {
+            font-size: 12px;
+            color: #7F8C8D;
+            margin-bottom: 8px;
+        }
+
+        .content-fields .field-group input[type="text"],
+        .content-fields .field-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #E8ECF0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.3s ease;
+            color: #2C3E50;
+        }
+
+        .content-fields .field-group input[type="text"]:focus,
+        .content-fields .field-group textarea:focus {
+            outline: none;
+            border-color: #D4A843;
+            box-shadow: 0 0 0 3px rgba(212,168,67,0.1);
+        }
+
+        .content-fields .field-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .content-fields .field-group textarea.large {
+            min-height: 200px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7F8C8D;
+        }
+
+        .empty-state .icon {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .save-message {
+            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .save-message.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .save-message.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        /* Admin Dropdown */
+        .admin-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .admin-dropdown-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            color: #2C3E50;
+            font-family: 'Inter', sans-serif;
+        }
+        .admin-dropdown-btn:hover { background-color: rgba(0,0,0,0.05); }
+        .dropdown-arrow { font-size: 10px; transition: transform 0.3s ease; }
+        .admin-dropdown-btn.active .dropdown-arrow { transform: rotate(180deg); }
+        .admin-dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 110%;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            min-width: 180px;
+            padding: 8px 0;
+            z-index: 1000;
+            border: 1px solid #E8ECF0;
+        }
+        .admin-dropdown-menu.show { display: block; }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            color: #2C3E50;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .dropdown-item:hover { background-color: #F5F7FA; }
+        .dropdown-divider { border: none; border-top: 1px solid #E8ECF0; margin: 4px 12px; }
+
+        @media (max-width: 768px) {
+            .admin-sidebar { transform: translateX(-100%); width: 280px; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 20px; }
+            .admin-hamburger { display: flex; }
+            .admin-header h1 { font-size: 22px; }
+            .content-controls { flex-direction: column; align-items: stretch; }
+            .content-controls select { width: 100%; }
+            .content-controls .btn { width: 100%; justify-content: center; }
+            .content-fields { padding: 20px; }
+        }
+        @media (max-width: 480px) {
+            .content-fields .field-group textarea { min-height: 80px; }
+            .content-fields .field-group textarea.large { min-height: 150px; }
+        }
+        body.dark-mode .content-controls select { background-color: #0D1A30; border-color: #1A3A5A; color: #E8ECF0; }
+body.dark-mode .content-fields { background-color: #122240; }
+body.dark-mode .content-fields .field-group { border-bottom-color: #1A3A5A; }
+body.dark-mode .content-fields .field-group label { color: #E8ECF0; }
+body.dark-mode .content-fields .field-group .field-hint { color: #B0C4DE; }
+body.dark-mode .content-fields .field-group input[type="text"],
+body.dark-mode .content-fields .field-group textarea {
+    background-color: #0D1A30;
+    border-color: #1A3A5A;
+    color: #E8ECF0;
+}
+body.dark-mode .empty-state { color: #B0C4DE; }
+.content-page-title { color: #0B1A3A; }
+body.dark-mode .content-page-title { color: #FFFFFF; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-panel">
+        <!-- Sidebar -->
+                 <div class="sidebar-skeleton" aria-hidden="true"><div class="skel-logo"></div><div class="skel-line" style="width:70%;margin:0 auto 24px;"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div></div>
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="logo">
+                <img src="images/new-logo.png" alt="ISSE Logo">
+                <h3>ISSE Admin</h3>
+                <p>Institute of Space Science &amp; Engineering</p>
+            </div>
+            <a href="admin-dashboard.html" class="nav-item" id="navDashboard">
+                <img src="icons/dashboard-icon.png" alt="Dashboard" class="icon"> Dashboard
+            </a>
+            <a href="admin-news.html" class="nav-item" id="navNews">
+                <img src="icons/news-icon-admin.png" alt="News" class="icon"> News Management
+            </a>
+            <a href="admin-subscribers.html" class="nav-item" id="navSubscribers">
+                <img src="icons/subscribers-icon.png" alt="Subscribers" class="icon"> Subscribers
+            </a>
+            <a href="admin-messages.html" class="nav-item" id="navMessages">
+                <img src="icons/messages-icon.png" alt="Messages" class="icon"> Contact Messages
+            </a>
+            <a href="admin-admins.html" class="nav-item" id="navAdmins">
+                <img src="icons/admins-icon.png" alt="Admins" class="icon"> Admin Management
+            </a>
+            <a href="admin-audit.html" class="nav-item" id="navAudit">
+                <img src="icons/audit-icon.png" alt="Audit" class="icon"> Audit Log
+            </a>
+            <a href="admin-banners.html" class="nav-item" id="navBanners">
+                <img src="icons/banner-icon.png" alt="Banners" class="icon"> Banners
+            </a>
+            <a href="admin-content.html" class="nav-item active" id="navContent">
+                <img src="icons/content-icon.png" alt="Content" class="icon"> Site Content
+            </a>
+            <a href="admin-programs.html" class="nav-item" id="navPrograms">
+                <img src="icons/programs-icon.png" alt="Programs" class="icon"> Programs
+            </a>
+            <a href="#" class="nav-item" id="navAcademyPanel">
+    <img src="icons/academy-icon.png" alt="Academy Panel" class="icon"> Academy Panel
+</a>
+            <a href="#" class="nav-item logout" id="logoutBtn">
+                <img src="icons/logout-icon.png" alt="Logout" class="icon"> Logout
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="admin-hamburger" id="adminHamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <h1>Site Content</h1>
+                </div>
+                <div class="admin-info">
+                    <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+        <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+    </button>
+                    <div class="admin-dropdown">
+                        <button class="admin-dropdown-btn" id="adminDropdownBtn">
+                            <span id="adminNameDisplay">Admin</span>
+                            <span class="role-badge" id="adminRoleDisplay">Super Admin</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="admin-dropdown-menu" id="adminDropdownMenu">
+                            <a href="admin-profile.html" class="dropdown-item">
+                                <span>👤</span> Profile
+                            </a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item" id="logoutDropdownBtn">
+                                <span>🚪</span> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p style="color:#7F8C8D; margin-bottom:20px; font-size:14px;">
+                Select a page below to edit its text content. Changes are saved to the database and appear immediately on the public site.
+            </p>
+
+            <div class="content-controls">
+                <select id="pageSelect">
+                    <option value="">— Select a page —</option>
+                    <option value="home">Homepage</option>
+                    <option value="about">About</option>
+                    <option value="programs">Programs</option>
+                    <option value="admissions">Admissions</option>
+                    <option value="news">News</option>
+                    <option value="contact">Contact</option>
+                    <option value="collaborations">Collaborations</option>
+                    <option value="privacy">Privacy Policy</option>
+                </select>
+                <button class="btn btn-save" id="saveContentBtn" onclick="saveContent()">
+                    💾 Save All Changes
+                </button>
+            </div>
+
+            <div id="contentFields" class="content-fields">
+                <div class="empty-state">
+                                      
+                    <p style="font-size:18px;">Select a page from the dropdown above</p>
+                    <p style="font-size:14px; color:#B0C4DE;">Content will load here for editing</p>
+                </div>
+            </div>
+
+            <div id="saveMessage" class="save-message"></div>
+        </main>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script>
+        // ==================== PAGE SECTION DEFINITIONS ====================
+        const PAGE_SECTIONS = {
+            home: {
+                label: 'Homepage',
+                fields: [
+                    { key: 'hero_title', label: 'Hero Title', type: 'text', default: 'Institute of Space Science & Engineering' },
+                    { key: 'hero_subtitle', label: 'Hero Subtitle', type: 'text', default: 'Excellence in Space Science Education and Research' },
+                    { key: 'welcome_title', label: 'Welcome Section Title', type: 'text', default: 'Welcome to ISSE' },
+                    { key: 'welcome_paragraph_1', label: 'Welcome Paragraph 1', type: 'textarea', default: 'It is with great pleasure that I welcome you to the official website of the Institute of Space Science and Engineering (ISSE). The Institute which was fully established in 2015 by the National Space Research and Development Agency (NASRDA) is in affiliation with the African University of Science and Technology (AUST).' },
+                    { key: 'welcome_paragraph_2', label: 'Welcome Paragraph 2', type: 'textarea', default: 'ISSE, through AUST awards MSc/PhD in Advanced Space Sciences and Engineering. This website provides a general information about the Institute, and the programmes. Additional information is also available at the AUST website.' },
+                    { key: 'welcome_paragraph_3', label: 'Welcome Paragraph 3', type: 'textarea', default: 'The NUC approved MSc and PhD programmes are as follows: Space Physics, Geoinformatics and GIS Applications, Aerospace Engineering, Systems Engineering.' },
+                    { key: 'welcome_paragraph_4', label: 'Welcome Paragraph 4', type: 'textarea', default: 'We are a unique postgraduate Institute set to address the growing needs of scientific and space knowledge, and innovations in Nigeria and the African continent at large.' },
+                    { key: 'activities_title', label: 'Activities Section Title', type: 'text', default: 'Student Activities' },
+                    { key: 'activities_text', label: 'Activities Text', type: 'textarea', default: 'Our students are involved in practical sessions to improve their problem-solving skills for real-time solutions. Our scholars publish the research work for the collective benefit of the scientific community. We avail our students with collaborative opportunities to widen their scope.' }
+                ]
+            },
+            about: {
+                label: 'About',
+                fields: [
+                    { key: 'intro_title', label: 'Introduction Title', type: 'text', default: 'About the Institute' },
+                    { key: 'intro_paragraph_1', label: 'Introduction Paragraph 1', type: 'textarea', default: 'The Institute of Space Science & Engineering (ISSE), which is currently located in Abuja-FCT, was established on the 2nd June, 2015 in accordance with the National Space Research & Development Agency (NASRDA) Act 2010. It is a unique postgraduate Institute set to address the growing needs of space scientific knowledge and innovations in Nigeria and Africa continent at large.' },
+                    { key: 'intro_paragraph_2', label: 'Introduction Paragraph 2', type: 'textarea', default: 'In general, the Institute comprises of the following programmes: Space Physics, Geoinformatics and GIS Applications, Aerospace Engineering and Systems Engineering leading to the award of Master of Science (M.Sc.) and Doctor of Philosophy (Ph.D.) degrees.' },
+                    { key: 'intro_paragraph_3', label: 'Introduction Paragraph 3', type: 'textarea', default: 'The programmes were strategically developed in response to the challenges faced by today\'s scientific community that requires ability to analyze and solve complex scientific and engineering design problems in space science and engineering.' },
+                    { key: 'intro_paragraph_4', label: 'Introduction Paragraph 4', type: 'textarea', default: 'The Institute involves interdisciplinary skills, expertise and approaches for proffering solutions to a better understanding of Earth-Sun systems and space technology for the purpose of improving socio-economic development and safety of our world today.' },
+                    { key: 'mission_title', label: 'Mission Title', type: 'text', default: 'Our Mission' },
+                    { key: 'mission_text', label: 'Mission Text', type: 'textarea', default: 'To advance space science education and research in Nigeria and Africa by providing high-quality postgraduate training and fostering innovation in space science and engineering.' },
+                    { key: 'vision_title', label: 'Vision Title', type: 'text', default: 'Our Vision' },
+                    { key: 'vision_text', label: 'Vision Text', type: 'textarea', default: 'To become a leading center of excellence in space science and engineering education, research, and innovation in Africa.' },
+                    { key: 'history_title', label: 'History Section Title', type: 'text', default: 'Our History' },
+                    { key: 'history_subtitle', label: 'History Subtitle', type: 'text', default: 'From a national space policy to a postgraduate institute' },
+                    { key: 'cta_title', label: 'CTA Section Title', type: 'text', default: 'Join Us at ISSE' },
+                    { key: 'cta_text', label: 'CTA Section Text', type: 'text', default: 'Learn more about our programs and how to apply' }
+                ]
+            },
+            programs: {
+                label: 'Programs',
+                fields: [
+                    { key: 'page_title', label: 'Page Title', type: 'text', default: 'Our Postgraduate Programs' },
+                    { key: 'page_subtitle', label: 'Page Subtitle', type: 'text', default: 'NUC-accredited M.Sc. and Ph.D. programs in space science and engineering' }
+                ]
+            },
+            admissions: {
+                label: 'Admissions',
+                fields: [
+                    { key: 'page_title', label: 'Page Title', type: 'text', default: 'Admissions' },
+                    { key: 'page_subtitle', label: 'Page Subtitle', type: 'text', default: 'Take the first step toward a career in space science' },
+                    { key: 'msc_title', label: 'MSc Requirements Title', type: 'text', default: 'M.Sc. Admission Requirements' },
+                    { key: 'msc_requirements', label: 'MSc Requirements (one per line)', type: 'textarea', default: "Bachelor's degree in a relevant field from a recognized university\nMinimum CGPA of 3.0 on a 4-point scale or 3.5 on a 5-point scale (Second Class Upper)\n18 months duration (12 months coursework + 6 months research leading to an MSc thesis)" },
+                    { key: 'phd_title', label: 'PhD Requirements Title', type: 'text', default: 'Ph.D. Admission Requirements' },
+                    { key: 'phd_requirements', label: 'PhD Requirements (one per line)', type: 'textarea', default: "M.Sc. in a relevant field from a recognized university\nMinimum CGPA of 3.5 on a 4-point scale or 4.0 on a 5-point scale\nMinimum 3 years duration (1 year coursework + 2 years research)\nGraduation requires publishing two papers from the thesis in at least a SCOPUS-indexed journal" },
+                    { key: 'process_title', label: 'Application Process Title', type: 'text', default: 'Application Process' },
+                    { key: 'process_steps', label: 'Application Process Steps (one per line)', type: 'textarea', default: "Visit the AUST website to access the application form\nComplete the application form with accurate information\nSubmit all required academic transcripts and documents\nPay the application fee as specified\nSubmit your application before the deadline\nAwait admission decision from the admissions committee" },
+                    { key: 'contact_title', label: 'Contact Admissions Title', type: 'text', default: 'Contact Admissions' }
+                ]
+            },
+            news: {
+                label: 'News',
+                fields: [
+                    { key: 'page_title', label: 'Page Title', type: 'text', default: 'News & Announcements' },
+                    { key: 'page_subtitle', label: 'Page Subtitle', type: 'text', default: 'Stay updated with the latest from ISSE' }
+                ]
+            },
+            contact: {
+                label: 'Contact',
+                fields: [
+                    { key: 'page_title', label: 'Page Title', type: 'text', default: 'Contact Us' },
+                    { key: 'page_subtitle', label: 'Page Subtitle', type: 'text', default: 'Reach out to us for inquiries and support' },
+                    { key: 'form_title', label: 'Form Title', type: 'text', default: 'Send Us a Message' },
+                    { key: 'info_title', label: 'Contact Info Title', type: 'text', default: 'Contact Information' },
+                    { key: 'socials_title', label: 'Socials Title', type: 'text', default: 'Our Socials' },
+                    { key: 'map_title', label: 'Map Section Title', type: 'text', default: 'Find Us' }
+                ]
+            },
+            collaborations: {
+                label: 'Collaborations',
+                fields: [
+                    { key: 'page_title', label: 'Page Title', type: 'text', default: 'Our Collaborations' },
+                    { key: 'page_subtitle', label: 'Page Subtitle', type: 'text', default: 'Working together to advance space science across Africa' }
+                ]
+            },
+            privacy: {
+                label: 'Privacy Policy',
+                fields: [
+                    { key: 'page_title', label: 'Page Title', type: 'text', default: 'Privacy Policy' },
+                    { key: 'page_subtitle', label: 'Page Subtitle', type: 'text', default: 'How we handle the information you give us' },
+                    { key: 'intro_text', label: 'Intro Paragraph', type: 'textarea', default: 'This policy explains what personal information the Institute of Space Science & Engineering (ISSE) collects through this website, why we collect it, and what you can ask us to do with it. It covers this website only, not the separate systems run by NASRDA or the African University of Science and Technology.' }
+                ]
+            }
+        };
+
+        let currentAdmin = null;
+        let contentData = {};
+        let currentPage = '';
+
+        // ==================== SESSION CHECK ====================
+        initDarkModeToggle();
+        (async function() {
+            const admin = await getCurrentAdmin();
+            if (!admin) {
+                window.location.replace('admin-login.html');
+                return;
+            }
+
+            currentAdmin = admin;
+            document.getElementById('adminNameDisplay').textContent = admin.username;
+            document.getElementById('adminRoleDisplay').textContent = admin.role;
+
+            // Show/Hide sidebar items based on role
+            const role = admin.role;
+            document.getElementById('navAcademyPanel').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+document.getElementById('navAcademyPanel').href = ACADEMY_URL;
+            document.getElementById('navSubscribers').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+                        document.getElementById('navMessages').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+            document.getElementById('navAdmins').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+            document.getElementById('navAudit').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+            document.body.classList.add('nav-ready');
+          
+            document.getElementById('navBanners').style.display = 'flex';
+            document.getElementById('navContent').style.display = 'flex';
+            document.getElementById('navPrograms').style.display = 'flex';
+
+            await loadContent();
+        })();
+
+        // ==================== LOAD CONTENT ====================
+        async function loadContent() {
+            try {
+                const { data, error } = await db
+                    .from('site_content')
+                    .select('*');
+
+                if (error) throw error;
+
+                // Convert to object keyed by page_section
+                contentData = {};
+                (data || []).forEach(item => {
+                    const key = `${item.page}_${item.section}`;
+                    contentData[key] = item.content;
+                });
+
+            } catch (error) {
+                console.error('Error loading content:', error);
+            }
+        }
+
+        // ==================== PAGE SELECTION ====================
+        document.getElementById('pageSelect').addEventListener('change', function() {
+            currentPage = this.value;
+            if (currentPage) {
+                renderFields(currentPage);
+            } else {
+                document.getElementById('contentFields').innerHTML = `
+                    <div class="empty-state">
+                                                
+                        <p style="font-size:18px;">Select a page from the dropdown above</p>
+                        <p style="font-size:14px; color:#B0C4DE;">Content will load here for editing</p>
+                    </div>
+                `;
+                document.getElementById('saveMessage').className = 'save-message';
+            }
+        });
+
+        // ==================== RENDER FIELDS ====================
+        function renderFields(page) {
+            const pageInfo = PAGE_SECTIONS[page];
+            if (!pageInfo) return;
+
+            const container = document.getElementById('contentFields');
+            let html = `<h2 class="content-page-title" style="margin-bottom:20px;">${pageInfo.label}</h2>`;
+
+            pageInfo.fields.forEach(field => {
+                const key = `${page}_${field.key}`;
+                const value = contentData[key] || field.default || '';
+                const isTextarea = field.type === 'textarea';
+                const extraClass = isTextarea && value && value.split('\n').length > 5 ? 'large' : '';
+
+                html += `
+                    <div class="field-group">
+                        <label for="${key}">${field.label}</label>
+                        <div class="field-hint">${isTextarea ? 'One item per line for lists' : ''}</div>
+                        ${isTextarea
+                            ? `<textarea id="${key}" class="${extraClass}" onchange="markDirty()">${escapeHtml(value)}</textarea>`
+                            : `<input type="text" id="${key}" value="${escapeHtml(value)}" onchange="markDirty()">`
+                        }
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('saveMessage').className = 'save-message';
+        }
+
+        // ==================== ESCAPE HTML ====================
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ==================== DIRTY FLAG ====================
+        let isDirty = false;
+
+        function markDirty() {
+            isDirty = true;
+            document.getElementById('saveMessage').className = 'save-message';
+        }
+
+        // ==================== SAVE CONTENT ====================
+        async function saveContent() {
+            if (!currentPage) {
+                showMessage('Please select a page first.', 'error');
+                return;
+            }
+
+            const pageInfo = PAGE_SECTIONS[currentPage];
+            if (!pageInfo) return;
+
+            const saveBtn = document.getElementById('saveContentBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = '⏳ Saving...';
+
+            try {
+                const updates = [];
+
+                pageInfo.fields.forEach(field => {
+                    const key = `${currentPage}_${field.key}`;
+                    const element = document.getElementById(key);
+                    if (element) {
+                        const value = element.value.trim();
+                        updates.push({
+                            page: currentPage,
+                            section: field.key,
+                            content: value || null
+                        });
+                    }
+                });
+
+                // Upsert each field
+                for (const update of updates) {
+                    const { error } = await db
+                        .from('site_content')
+                        .upsert(update, { onConflict: 'page,section' });
+
+                    if (error) throw error;
+
+                    // Update local cache
+                    const cacheKey = `${update.page}_${update.section}`;
+                    contentData[cacheKey] = update.content;
+                }
+
+                // Log activity
+                await logActivity(`Updated content for: ${currentPage}`, currentAdmin);
+
+                showMessage('✅ All changes saved successfully!', 'success');
+                isDirty = false;
+
+            } catch (error) {
+                console.error('Save error:', error);
+                showMessage(`❌ Error saving: ${error.message}`, 'error');
+            }
+
+            saveBtn.disabled = false;
+            saveBtn.textContent = '💾 Save All Changes';
+        }
+
+        // ==================== SHOW MESSAGE ====================
+        function showMessage(text, type) {
+            const el = document.getElementById('saveMessage');
+            el.textContent = text;
+            el.className = `save-message ${type}`;
+        }
+
+        // ==================== ADMIN DROPDOWN ====================
+        const dropdownBtn = document.getElementById('adminDropdownBtn');
+        const dropdownMenu = document.getElementById('adminDropdownMenu');
+
+        if (dropdownBtn && dropdownMenu) {
+            dropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                dropdownMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownBtn.classList.remove('active');
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+
+            const logoutDropdownBtn = document.getElementById('logoutDropdownBtn');
+            if (logoutDropdownBtn) {
+                logoutDropdownBtn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    await logActivity('Logout', currentAdmin, {});
+                                    await db.auth.signOut();
+                window.location.replace('admin-login.html');
+                });
+            }
+        }
+
+        // ==================== HAMBURGER TOGGLE ====================
+        document.getElementById('adminHamburger').addEventListener('click', function() {
+            document.getElementById('adminSidebar').classList.toggle('open');
+        });
+
+        // ==================== LOGOUT ====================
+        document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            await logActivity('Logout', currentAdmin, {});
+                            await db.auth.signOut();
+                window.location.replace('admin-login.html');
+        });
+
+        // ==================== WARN BEFORE LEAVING ====================
+        window.addEventListener('beforeunload', function(e) {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+                return e.returnValue;
+            }
+        });
+
+        // ==================== MAKE FUNCTIONS GLOBAL ====================
+        window.markDirty = markDirty;
+        window.saveContent = saveContent;
+    </script>
+</body>
+</html>

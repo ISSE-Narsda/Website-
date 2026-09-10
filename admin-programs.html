@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programs Content - ISSE Admin</title>
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .admin-panel { display: flex; min-height: 100vh; background-color: #F5F7FA; }
+        .admin-sidebar { width: 260px; background-color: #0B1A3A; color: #FFFFFF; padding: 20px 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+        .admin-sidebar .logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; text-align: center; }
+        .admin-sidebar .logo img { height: 45px; width: auto; margin: 0 auto 8px; }
+        .admin-sidebar .logo h3 { font-size: 16px; color: #FFFFFF; margin: 0; }
+        .admin-sidebar .logo p { font-size: 12px; color: #B0C4DE; margin: 0; }
+        .admin-sidebar .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #B0C4DE; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; font-size: 14px; font-weight: 500; }
+        .admin-sidebar .nav-item:hover { background-color: rgba(255,255,255,0.05); color: #FFFFFF; }
+        .admin-sidebar .nav-item.active { background-color: rgba(212,168,67,0.1); color: #D4A843; border-left-color: #D4A843; }
+        .admin-sidebar .nav-item .icon { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+        .admin-sidebar .nav-item.logout { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+        .admin-sidebar .nav-item.logout .icon { filter: brightness(0) saturate(100%) invert(48%) sepia(71%) saturate(423%) hue-rotate(340deg) brightness(95%) contrast(94%); }
+        .admin-sidebar .nav-item.logout:hover { background-color: rgba(231,76,60,0.1); }
+        .admin-main { margin-left: 260px; padding: 30px; flex: 1; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #E8ECF0; }
+        .admin-header h1 { font-size: 28px; color: #0B1A3A; margin: 0; }
+        .admin-header .admin-info { display: flex; align-items: center; gap: 15px; font-size: 14px; color: #2C3E50; }
+        .admin-header .admin-info .role-badge { background-color: #D4A843; color: #0B1A3A; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .admin-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; background: none; border: none; }
+        .admin-hamburger span { display: block; width: 25px; height: 3px; background-color: #0B1A3A; border-radius: 3px; }
+
+        .content-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .content-controls select {
+            padding: 10px 20px;
+            border: 1px solid #E8ECF0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+            min-width: 220px;
+            cursor: pointer;
+        }
+
+        .content-controls select:focus {
+            outline: none;
+            border-color: #D4A843;
+        }
+
+        .content-controls .btn {
+            padding: 10px 25px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+        }
+
+        .btn-save {
+            background-color: #D4A843;
+            color: #0B1A3A;
+        }
+
+        .btn-save:hover {
+            background-color: #C49A3A;
+            transform: translateY(-2px);
+        }
+
+        .btn-save:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-add {
+            background-color: #0B1A3A;
+            color: #FFFFFF;
+            padding: 6px 16px;
+            font-size: 13px;
+        }
+
+        .btn-add:hover {
+            background-color: #1A2A5A;
+            transform: translateY(-2px);
+        }
+
+        .btn-remove {
+            background-color: #E74C3C;
+            color: #FFFFFF;
+            padding: 4px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-remove:hover {
+            background-color: #C0392B;
+        }
+
+        .btn-move {
+            background-color: #E8ECF0;
+            color: #2C3E50;
+            padding: 4px 10px;
+            font-size: 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-move:hover {
+            background-color: #D5D8DC;
+        }
+
+        .program-fields {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+        }
+
+        .program-fields .field-group {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #F5F7FA;
+        }
+
+        .program-fields .field-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .program-fields .field-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #0B1A3A;
+            margin-bottom: 6px;
+        }
+
+        .program-fields .field-group .field-hint {
+            font-size: 12px;
+            color: #7F8C8D;
+            margin-bottom: 8px;
+        }
+
+        .program-fields .field-group input[type="text"],
+        .program-fields .field-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #E8ECF0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.3s ease;
+            color: #2C3E50;
+        }
+
+        .program-fields .field-group input[type="text"]:focus,
+        .program-fields .field-group textarea:focus {
+            outline: none;
+            border-color: #D4A843;
+            box-shadow: 0 0 0 3px rgba(212,168,67,0.1);
+        }
+
+        .program-fields .field-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .program-fields .field-group .list-items {
+            margin-top: 10px;
+        }
+
+        .program-fields .field-group .list-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: #F5F7FA;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            border: 1px solid #E8ECF0;
+        }
+
+        .program-fields .field-group .list-item input[type="text"] {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #E8ECF0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+        }
+
+        .program-fields .field-group .list-item input[type="text"]:focus {
+            outline: none;
+            border-color: #D4A843;
+        }
+
+        .program-fields .field-group .list-item .item-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .save-message {
+            margin-top: 20px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .save-message.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .save-message.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7F8C8D;
+        }
+
+        .empty-state .icon {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        /* Admin Dropdown */
+        .admin-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .admin-dropdown-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            color: #2C3E50;
+            font-family: 'Inter', sans-serif;
+        }
+        .admin-dropdown-btn:hover { background-color: rgba(0,0,0,0.05); }
+        .dropdown-arrow { font-size: 10px; transition: transform 0.3s ease; }
+        .admin-dropdown-btn.active .dropdown-arrow { transform: rotate(180deg); }
+        .admin-dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 110%;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            min-width: 180px;
+            padding: 8px 0;
+            z-index: 1000;
+            border: 1px solid #E8ECF0;
+        }
+        .admin-dropdown-menu.show { display: block; }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            color: #2C3E50;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .dropdown-item:hover { background-color: #F5F7FA; }
+        .dropdown-divider { border: none; border-top: 1px solid #E8ECF0; margin: 4px 12px; }
+
+        @media (max-width: 768px) {
+            .admin-sidebar { transform: translateX(-100%); width: 280px; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 20px; }
+            .admin-hamburger { display: flex; }
+            .admin-header h1 { font-size: 22px; }
+            .content-controls { flex-direction: column; align-items: stretch; }
+            .content-controls select { width: 100%; }
+            .content-controls .btn { width: 100%; justify-content: center; }
+            .program-fields { padding: 20px; }
+            .program-fields .field-group .list-item { flex-wrap: wrap; }
+            .program-fields .field-group .list-item input[type="text"] { width: 100%; }
+            .program-fields .field-group .list-item .item-actions { width: 100%; justify-content: flex-end; }
+        }
+        @media (max-width: 480px) {
+            .program-fields .field-group textarea { min-height: 80px; }
+        }
+        body.dark-mode .content-controls select { background-color: #0D1A30; border-color: #1A3A5A; color: #E8ECF0; }
+body.dark-mode .program-fields { background-color: #122240; }
+body.dark-mode .program-fields .field-group { border-bottom-color: #1A3A5A; }
+body.dark-mode .program-fields .field-group label { color: #E8ECF0; }
+body.dark-mode .program-fields .field-group .field-hint { color: #B0C4DE; }
+body.dark-mode .program-fields .field-group input[type="text"],
+body.dark-mode .program-fields .field-group textarea {
+    background-color: #0D1A30;
+    border-color: #1A3A5A;
+    color: #E8ECF0;
+}
+body.dark-mode .program-fields .field-group .list-item {
+    background-color: #0D1A30;
+    border-color: #1A3A5A;
+}
+body.dark-mode .program-fields .field-group .list-item input[type="text"] {
+    background-color: #0A1628;
+    border-color: #1A3A5A;
+    color: #E8ECF0;
+}
+body.dark-mode .btn-move { background-color: #1A3A5A; color: #E8ECF0; }
+body.dark-mode .btn-move:hover { background-color: #24457A; }
+body.dark-mode .empty-state { color: #B0C4DE; }
+.program-page-title { color: #0B1A3A; }
+body.dark-mode .program-page-title { color: #FFFFFF; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-panel">
+        <!-- Sidebar -->
+                 <div class="sidebar-skeleton" aria-hidden="true"><div class="skel-logo"></div><div class="skel-line" style="width:70%;margin:0 auto 24px;"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div></div>
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="logo">
+                <img src="images/new-logo.png" alt="ISSE Logo">
+                <h3>ISSE Admin</h3>
+                <p>Institute of Space Science &amp; Engineering</p>
+            </div>
+            <a href="admin-dashboard.html" class="nav-item" id="navDashboard">
+                <img src="icons/dashboard-icon.png" alt="Dashboard" class="icon"> Dashboard
+            </a>
+            <a href="admin-news.html" class="nav-item" id="navNews">
+                <img src="icons/news-icon-admin.png" alt="News" class="icon"> News Management
+            </a>
+            <a href="admin-subscribers.html" class="nav-item" id="navSubscribers">
+                <img src="icons/subscribers-icon.png" alt="Subscribers" class="icon"> Subscribers
+            </a>
+            <a href="admin-messages.html" class="nav-item" id="navMessages">
+                <img src="icons/messages-icon.png" alt="Messages" class="icon"> Contact Messages
+            </a>
+            <a href="admin-admins.html" class="nav-item" id="navAdmins">
+                <img src="icons/admins-icon.png" alt="Admins" class="icon"> Admin Management
+            </a>
+            <a href="admin-audit.html" class="nav-item" id="navAudit">
+                <img src="icons/audit-icon.png" alt="Audit" class="icon"> Audit Log
+            </a>
+            <a href="admin-banners.html" class="nav-item" id="navBanners">
+                <img src="icons/banner-icon.png" alt="Banners" class="icon"> Banners
+            </a>
+            <a href="admin-content.html" class="nav-item" id="navContent">
+                <img src="icons/content-icon.png" alt="Content" class="icon"> Site Content
+            </a>
+            <a href="admin-programs.html" class="nav-item active" id="navPrograms">
+                <img src="icons/programs-icon.png" alt="Programs" class="icon"> Programs
+            </a>
+            <a href="#" class="nav-item" id="navAcademyPanel">
+    <img src="icons/academy-icon.png" alt="Academy Panel" class="icon"> Academy Panel
+</a>
+            <a href="#" class="nav-item logout" id="logoutBtn">
+                <img src="icons/logout-icon.png" alt="Logout" class="icon"> Logout
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="admin-hamburger" id="adminHamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <h1>Program Content</h1>
+                </div>
+                <div class="admin-info">
+                    <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+        <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+    </button>
+                    <div class="admin-dropdown">
+                        <button class="admin-dropdown-btn" id="adminDropdownBtn">
+                            <span id="adminNameDisplay">Admin</span>
+                            <span class="role-badge" id="adminRoleDisplay">Super Admin</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="admin-dropdown-menu" id="adminDropdownMenu">
+                            <a href="admin-profile.html" class="dropdown-item">
+                                <span>👤</span> Profile
+                            </a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item" id="logoutDropdownBtn">
+                                <span>🚪</span> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p style="color:#7F8C8D; margin-bottom:20px; font-size:14px;">
+                Select a program below to edit its content. Course lists and requirements can be reordered.
+            </p>
+
+            <div class="content-controls">
+                <select id="programSelect">
+                    <option value="">— Select a program —</option>
+                    <option value="space-physics">Space Physics</option>
+                    <option value="geoinformatics">Geoinformatics and GIS</option>
+                    <option value="aerospace-engineering">Aerospace Engineering</option>
+                    <option value="systems-engineering">Systems Engineering</option>
+                </select>
+                <button class="btn btn-save" id="saveProgramBtn" onclick="saveProgram()">
+                    💾 Save All Changes
+                </button>
+            </div>
+
+            <div id="programFields" class="program-fields">
+                <div class="empty-state">
+                                        
+                    <p style="font-size:18px;">Select a program from the dropdown above</p>
+                    <p style="font-size:14px; color:#B0C4DE;">Content will load here for editing</p>
+                </div>
+            </div>
+
+            <div id="saveMessage" class="save-message"></div>
+        </main>
+    </div>
+
+    <script src="supabase-config.js"></script>
+    <script>
+        const PROGRAM_SLUGS = {
+            'space-physics': 'Space Physics',
+            'geoinformatics': 'Geoinformatics and GIS',
+            'aerospace-engineering': 'Aerospace Engineering',
+            'systems-engineering': 'Systems Engineering'
+        };
+
+        let currentAdmin = null;
+        let currentProgram = '';
+        let programData = {};
+        let courseData = [];
+        let requirementData = [];
+        let isDirty = false;
+
+        // ==================== SESSION CHECK ====================
+        initDarkModeToggle();
+        (async function() {
+            const admin = await getCurrentAdmin();
+            if (!admin) {
+                window.location.replace('admin-login.html');
+                return;
+            }
+
+            currentAdmin = admin;
+            document.getElementById('adminNameDisplay').textContent = admin.username;
+            document.getElementById('adminRoleDisplay').textContent = admin.role;
+
+            // Show/Hide sidebar items based on role
+            const role = admin.role;
+            document.getElementById('navAcademyPanel').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+document.getElementById('navAcademyPanel').href = ACADEMY_URL; 'none';
+            document.getElementById('navSubscribers').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+                        document.getElementById('navMessages').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+            document.getElementById('navAdmins').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+            document.getElementById('navAudit').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+            document.body.classList.add('nav-ready');
+            
+            document.getElementById('navBanners').style.display = 'flex';
+            document.getElementById('navContent').style.display = 'flex';
+            document.getElementById('navPrograms').style.display = 'flex';
+        })();
+
+        // ==================== PROGRAM SELECTION ====================
+        document.getElementById('programSelect').addEventListener('change', function() {
+            currentProgram = this.value;
+            if (currentProgram) {
+                loadProgramData(currentProgram);
+            } else {
+                document.getElementById('programFields').innerHTML = `
+                    <div class="empty-state">
+                                               
+                        <p style="font-size:18px;">Select a program from the dropdown above</p>
+                        <p style="font-size:14px; color:#B0C4DE;">Content will load here for editing</p>
+                    </div>
+                `;
+                document.getElementById('saveMessage').className = 'save-message';
+            }
+        });
+
+        // ==================== LOAD PROGRAM DATA ====================
+        async function loadProgramData(slug) {
+            try {
+                // Load program info
+                const { data: program, error: pError } = await db
+                    .from('programs')
+                    .select('*')
+                    .eq('slug', slug)
+                    .maybeSingle();
+
+                if (pError) throw pError;
+                programData = program || { slug: slug, overview: '', duration_master: '', duration_phd: '' };
+
+                // Load courses
+                const { data: courses, error: cError } = await db
+                    .from('program_courses')
+                    .select('*')
+                    .eq('program_slug', slug)
+                    .order('sort_order', { ascending: true });
+
+                if (cError) throw cError;
+                courseData = courses || [];
+
+                // Load requirements
+                const { data: requirements, error: rError } = await db
+                    .from('program_requirements')
+                    .select('*')
+                    .eq('program_slug', slug)
+                    .order('level', { ascending: true })
+                    .order('sort_order', { ascending: true });
+
+                if (rError) throw rError;
+                requirementData = requirements || [];
+
+                renderFields();
+
+            } catch (error) {
+                console.error('Error loading program data:', error);
+                document.getElementById('programFields').innerHTML = `
+                    <div class="empty-state">
+                        <p style="color:red;">❌ Error loading program data: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ==================== RENDER FIELDS ====================
+        function renderFields() {
+            const container = document.getElementById('programFields');
+            const program = programData;
+
+            const masterRequirements = requirementData.filter(r => r.level === 'master');
+            const phdRequirements = requirementData.filter(r => r.level === 'phd');
+
+            container.innerHTML = `
+                <h2 class="program-page-title" style="margin-bottom:20px;">${PROGRAM_SLUGS[currentProgram] || currentProgram}</h2>
+
+                <!-- Overview -->
+                <div class="field-group">
+                    <label for="programOverview">Program Overview</label>
+                    <textarea id="programOverview" onchange="markDirty()">${escapeHtml(program.overview || '')}</textarea>
+                </div>
+
+                <!-- MSc Duration -->
+                <div class="field-group">
+                    <label for="durationMaster">MSc Duration</label>
+                    <div class="field-hint">e.g. "18 months (12 months coursework + 6 months research)"</div>
+                    <input type="text" id="durationMaster" value="${escapeHtml(program.duration_master || '')}" onchange="markDirty()">
+                </div>
+
+                <!-- PhD Duration -->
+                <div class="field-group">
+                    <label for="durationPhd">PhD Duration</label>
+                    <div class="field-hint">e.g. "3 years (1 year coursework + 2 years research)"</div>
+                    <input type="text" id="durationPhd" value="${escapeHtml(program.duration_phd || '')}" onchange="markDirty()">
+                </div>
+
+                <!-- Course List -->
+                <div class="field-group">
+                    <label>Course List</label>
+                    <div class="field-hint">Add, remove, or reorder courses using the buttons below</div>
+                    <div id="courseList" class="list-items">
+                        ${courseData.map((item, index) => `
+                            <div class="list-item" data-id="${item.id}" data-type="course">
+                                <input type="text" value="${escapeHtml(item.course_name)}" onchange="markDirty()" data-index="${index}" data-type="course">
+                                <div class="item-actions">
+                                    <button class="btn-move" onclick="moveItem('course', ${index}, -1)" ${index === 0 ? 'disabled' : ''}>↑</button>
+                                    <button class="btn-move" onclick="moveItem('course', ${index}, 1)" ${index === courseData.length - 1 ? 'disabled' : ''}>↓</button>
+                                    <button class="btn-remove" onclick="removeItem('course', ${index})">✕</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-add" onclick="addItem('course')" style="margin-top:10px;">➕ Add Course</button>
+                </div>
+
+                <!-- MSc Requirements -->
+                <div class="field-group">
+                    <label>MSc Requirements</label>
+                    <div class="field-hint">Add, remove, or reorder requirements using the buttons below</div>
+                    <div id="masterRequirementsList" class="list-items">
+                        ${masterRequirements.map((item, index) => `
+                            <div class="list-item" data-id="${item.id}" data-type="requirement-master">
+                                <input type="text" value="${escapeHtml(item.requirement_text)}" onchange="markDirty()" data-index="${index}" data-type="requirement-master">
+                                <div class="item-actions">
+                                    <button class="btn-move" onclick="moveItem('requirement-master', ${index}, -1)" ${index === 0 ? 'disabled' : ''}>↑</button>
+                                    <button class="btn-move" onclick="moveItem('requirement-master', ${index}, 1)" ${index === masterRequirements.length - 1 ? 'disabled' : ''}>↓</button>
+                                    <button class="btn-remove" onclick="removeItem('requirement-master', ${index})">✕</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-add" onclick="addItem('requirement-master')" style="margin-top:10px;">➕ Add MSc Requirement</button>
+                </div>
+
+                <!-- PhD Requirements -->
+                <div class="field-group">
+                    <label>PhD Requirements</label>
+                    <div class="field-hint">Add, remove, or reorder requirements using the buttons below</div>
+                    <div id="phdRequirementsList" class="list-items">
+                        ${phdRequirements.map((item, index) => `
+                            <div class="list-item" data-id="${item.id}" data-type="requirement-phd">
+                                <input type="text" value="${escapeHtml(item.requirement_text)}" onchange="markDirty()" data-index="${index}" data-type="requirement-phd">
+                                <div class="item-actions">
+                                    <button class="btn-move" onclick="moveItem('requirement-phd', ${index}, -1)" ${index === 0 ? 'disabled' : ''}>↑</button>
+                                    <button class="btn-move" onclick="moveItem('requirement-phd', ${index}, 1)" ${index === phdRequirements.length - 1 ? 'disabled' : ''}>↓</button>
+                                    <button class="btn-remove" onclick="removeItem('requirement-phd', ${index})">✕</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="btn btn-add" onclick="addItem('requirement-phd')" style="margin-top:10px;">➕ Add PhD Requirement</button>
+                </div>
+            `;
+
+            document.getElementById('saveMessage').className = 'save-message';
+            isDirty = false;
+        }
+
+        // ==================== ADD ITEM ====================
+        function addItem(type) {
+            const newItem = {
+                id: `temp-${Date.now()}`,
+                course_name: type === 'course' ? '' : undefined,
+                requirement_text: type !== 'course' ? '' : undefined,
+                level: type === 'requirement-master' ? 'master' : type === 'requirement-phd' ? 'phd' : undefined,
+                sort_order: 0
+            };
+
+            if (type === 'course') {
+                courseData.push(newItem);
+            } else if (type === 'requirement-master') {
+                requirementData.push({ ...newItem, level: 'master' });
+            } else if (type === 'requirement-phd') {
+                requirementData.push({ ...newItem, level: 'phd' });
+            }
+
+            // Recalculate sort orders
+            reorderItems();
+            markDirty();
+            renderFields();
+        }
+
+        // ==================== REMOVE ITEM ====================
+        function removeItem(type, index) {
+            if (!confirm('Remove this item?')) return;
+
+            if (type === 'course') {
+                const item = courseData[index];
+                if (item && !item.id.toString().startsWith('temp-')) {
+                    // Delete from database immediately
+                    db.from('program_courses').delete().eq('id', item.id).catch(console.error);
+                }
+                courseData.splice(index, 1);
+            } else if (type === 'requirement-master' || type === 'requirement-phd') {
+                const level = type === 'requirement-master' ? 'master' : 'phd';
+                const items = requirementData.filter(r => r.level === level);
+                const item = items[index];
+                const globalIndex = requirementData.indexOf(item);
+                if (item && !item.id.toString().startsWith('temp-')) {
+                    db.from('program_requirements').delete().eq('id', item.id).catch(console.error);
+                }
+                requirementData.splice(globalIndex, 1);
+            }
+
+            reorderItems();
+            markDirty();
+            renderFields();
+        }
+
+        // ==================== MOVE ITEM ====================
+        function moveItem(type, index, direction) {
+            if (type === 'course') {
+                const newIndex = index + direction;
+                if (newIndex < 0 || newIndex >= courseData.length) return;
+                [courseData[index], courseData[newIndex]] = [courseData[newIndex], courseData[index]];
+            } else if (type === 'requirement-master' || type === 'requirement-phd') {
+                const level = type === 'requirement-master' ? 'master' : 'phd';
+                const items = requirementData.filter(r => r.level === level);
+                const newIndex = index + direction;
+                if (newIndex < 0 || newIndex >= items.length) return;
+                const globalIndex1 = requirementData.indexOf(items[index]);
+                const globalIndex2 = requirementData.indexOf(items[newIndex]);
+                [requirementData[globalIndex1], requirementData[globalIndex2]] = [requirementData[globalIndex2], requirementData[globalIndex1]];
+            }
+
+            reorderItems();
+            markDirty();
+            renderFields();
+        }
+
+        // ==================== REORDER ITEMS ====================
+        function reorderItems() {
+            // Reorder courses
+            courseData.forEach((item, index) => {
+                item.sort_order = index;
+            });
+
+            // Reorder requirements by level
+            const masterItems = requirementData.filter(r => r.level === 'master');
+            const phdItems = requirementData.filter(r => r.level === 'phd');
+            masterItems.forEach((item, index) => { item.sort_order = index; });
+            phdItems.forEach((item, index) => { item.sort_order = index; });
+        }
+
+        // ==================== MARK DIRTY ====================
+        function markDirty() {
+            isDirty = true;
+            document.getElementById('saveMessage').className = 'save-message';
+        }
+
+        // ==================== SAVE PROGRAM ====================
+        async function saveProgram() {
+            if (!currentProgram) {
+                showMessage('Please select a program first.', 'error');
+                return;
+            }
+
+            const saveBtn = document.getElementById('saveProgramBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = '⏳ Saving...';
+
+            try {
+                // 1. Save program overview and durations
+                const overview = document.getElementById('programOverview').value.trim();
+                const durationMaster = document.getElementById('durationMaster').value.trim();
+                const durationPhd = document.getElementById('durationPhd').value.trim();
+
+                const { error: pError } = await db
+                    .from('programs')
+                    .upsert({
+                        slug: currentProgram,
+                        overview: overview || null,
+                        duration_master: durationMaster || null,
+                        duration_phd: durationPhd || null,
+                        updated_at: new Date()
+                    }, { onConflict: 'slug' });
+
+                if (pError) throw pError;
+
+                // 2. Save courses - delete all and re-insert
+                await db.from('program_courses').delete().eq('program_slug', currentProgram);
+
+                if (courseData.length > 0) {
+                    const courseInserts = courseData.map((item, index) => ({
+                        program_slug: currentProgram,
+                        course_name: item.course_name,
+                        sort_order: index
+                    }));
+                    const { error: cError } = await db.from('program_courses').insert(courseInserts);
+                    if (cError) throw cError;
+                }
+
+                // 3. Save requirements - delete all and re-insert
+                await db.from('program_requirements').delete().eq('program_slug', currentProgram);
+
+                if (requirementData.length > 0) {
+                    const reqInserts = requirementData.map((item, index) => ({
+                        program_slug: currentProgram,
+                        level: item.level,
+                        requirement_text: item.requirement_text,
+                        sort_order: item.sort_order
+                    }));
+                    const { error: rError } = await db.from('program_requirements').insert(reqInserts);
+                    if (rError) throw rError;
+                }
+
+                // Log activity
+                await logActivity(`Updated program content: ${currentProgram}`, currentAdmin);
+
+                showMessage('✅ All changes saved successfully!', 'success');
+                isDirty = false;
+
+                // Refresh data to get new IDs
+                await loadProgramData(currentProgram);
+
+            } catch (error) {
+                console.error('Save error:', error);
+                showMessage(`❌ Error saving: ${error.message}`, 'error');
+            }
+
+            saveBtn.disabled = false;
+            saveBtn.textContent = '💾 Save All Changes';
+        }
+
+        // ==================== SHOW MESSAGE ====================
+        function showMessage(text, type) {
+            const el = document.getElementById('saveMessage');
+            el.textContent = text;
+            el.className = `save-message ${type}`;
+        }
+
+        // ==================== ESCAPE HTML ====================
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ==================== ADMIN DROPDOWN ====================
+        const dropdownBtn = document.getElementById('adminDropdownBtn');
+        const dropdownMenu = document.getElementById('adminDropdownMenu');
+
+        if (dropdownBtn && dropdownMenu) {
+            dropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                dropdownMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownBtn.classList.remove('active');
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+
+            const logoutDropdownBtn = document.getElementById('logoutDropdownBtn');
+            if (logoutDropdownBtn) {
+                logoutDropdownBtn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    await logActivity('Logout', currentAdmin, {});
+                                    await db.auth.signOut();
+                window.location.replace('admin-login.html');
+                });
+            }
+        }
+
+        // ==================== HAMBURGER TOGGLE ====================
+        document.getElementById('adminHamburger').addEventListener('click', function() {
+            document.getElementById('adminSidebar').classList.toggle('open');
+        });
+
+        // ==================== LOGOUT ====================
+        document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            await logActivity('Logout', currentAdmin, {});
+                            await db.auth.signOut();
+                window.location.replace('admin-login.html');
+        });
+
+        // ==================== WARN BEFORE LEAVING ====================
+        window.addEventListener('beforeunload', function(e) {
+            if (isDirty) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+                return e.returnValue;
+            }
+        });
+
+        // ==================== MAKE FUNCTIONS GLOBAL ====================
+        window.markDirty = markDirty;
+        window.saveProgram = saveProgram;
+        window.addItem = addItem;
+        window.removeItem = removeItem;
+        window.moveItem = moveItem;
+    </script>
+</body>
+</html>

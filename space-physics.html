@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Physics - Institute of Space Science & Engineering</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+<link rel="manifest" href="manifest.json">
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ==================== HEADER / NAVIGATION ==================== -->
+<header>
+    <div class="container">
+        <div class="header-left">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="images/new-logo.png" alt="ISSE Logo" class="logo-img">
+                </a>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="programs.html">Programs</a></li>
+                    <li><a href="admissions.html">Admissions</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="collaborations.html">Collaborations</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+        <div class="header-right">
+            <a href="https://isse.edu.ng:2096/" target="_blank" class="btn-staff-mail-header">Staff Mail</a>
+            <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+                <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+            </button>
+        </div>
+    </div>
+</header>
+
+    <!-- ==================== PAGE BANNER ==================== -->
+    <section class="page-banner space-physics-banner" data-banner-page="space_physics">
+        <div class="page-banner-overlay"></div>
+        <div class="container page-banner-content">
+            <h1>Space Physics</h1>
+            <p class="banner-subtitle">M.Sc. and Ph.D. Program</p>
+        </div>
+    </section>
+
+    <!-- ==================== PROGRAM CONTENT ==================== -->
+    <section class="program-detail">
+        <div class="container">
+            <div class="program-detail-content" data-program-slug="space-physics">
+                <!-- Overview -->
+                <div class="program-detail-section">
+                    <h2>Program Overview</h2>
+                    <div data-program-overview>
+                    <p>The Space Science program covers a broad range of disciplines, from meteorology and geology, to lunar, solar, and planetary science, to astronomy and astrophysics, to the life sciences.</p>
+                    <p>This program is designed to equip students with the knowledge and skills needed to understand and explore the universe, from our own planet to the farthest reaches of space.</p>
+                    </div>
+                </div>
+
+                <!-- Course Structure -->
+                <div class="program-detail-section">
+                    <h2>Course Structure</h2>
+                    <ul class="course-list" data-program-courses>
+                        <li>Advanced Space Physics</li>
+                        <li>Solar and Heliospheric Physics</li>
+                        <li>Planetary Science and Geology</li>
+                        <li>Astrophysics and Cosmology</li>
+                        <li>Space Weather and Climate</li>
+                        <li>Remote Sensing and Data Analysis</li>
+                        <li>Research Methodology</li>
+                        <li>MSc/PhD Thesis Research</li>
+                    </ul>
+                </div>
+
+                <!-- Duration -->
+                <div class="program-detail-section">
+                    <h2>Program Duration</h2>
+                    <div class="duration-grid">
+                        <div class="duration-item">
+                            <h4>M.Sc.</h4>
+                            <p data-program-duration="master"><strong>18 months</strong><br>12 months coursework + 6 months research</p>
+                        </div>
+                        <div class="duration-item">
+                            <h4>Ph.D.</h4>
+                            <p data-program-duration="phd"><strong>3 years</strong><br>1 year coursework + 2 years research</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admission Requirements -->
+                <div class="program-detail-section">
+                    <h2>Admission Requirements</h2>
+                    <div class="requirements-grid">
+                        <div class="requirement-item">
+                            <h4>M.Sc. Requirements</h4>
+                            <ul data-program-requirements="master">
+                                <li>Bachelor's degree in Physics, Mathematics, or related field</li>
+                                <li>Minimum CGPA of 3.0 on 4-point scale or 3.5 on 5-point scale (Second Class Upper)</li>
+                            </ul>
+                        </div>
+                        <div class="requirement-item">
+                            <h4>Ph.D. Requirements</h4>
+                            <ul data-program-requirements="phd">
+                                <li>M.Sc. in Physics or related field</li>
+                                <li>Minimum CGPA of 3.5 on 4-point scale or 4.0 on 5-point scale</li>
+                                <li>Publication requirement: two papers from thesis in SCOPUS-indexed journal</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Career Prospects -->
+                <div class="program-detail-section">
+                    <h2>Career Prospects</h2>
+                    <ul class="career-list">
+                        <li>Space Scientist</li>
+                        <li>Astrophysicist</li>
+                        <li>Planetary Geologist</li>
+                        <li>Space Weather Analyst</li>
+                        <li>Academic Researcher</li>
+                        <li>University Lecturer</li>
+                        <li>Space Agency Specialist</li>
+                    </ul>
+                </div>
+
+                <!-- Back Button -->
+                <div class="program-detail-back">
+                    <a href="programs.html" class="btn btn-primary">← Back to Programs</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+    <!-- Decorative night sky. Animated entirely in CSS -->
+    <div class="footer-sky" aria-hidden="true">
+        <div class="star-layer star-layer-1"></div>
+        <div class="star-layer star-layer-2"></div>
+        <div class="star-layer star-layer-3"></div>
+        <span class="shooting-star shooting-star-1"></span>
+        <span class="shooting-star shooting-star-2"></span>
+        <span class="shooting-star shooting-star-3"></span>
+    </div>
+
+    <div class="container">
+        <div class="footer-grid">
+            <!-- Column 1: About -->
+            <div class="footer-about">
+                <img src="images/new-logo.png" alt="ISSE Logo" class="footer-logo-img">
+                <p>Institute of Space Science & Engineering — Advancing space science education and research in Nigeria and the African continent.</p>
+                <div class="footer-partner">
+                    <img src="images/aust-logo.png" alt="AUST Logo" class="footer-partner-logo">
+                    <p>African University of Science and Technology — A pan-African centre of excellence in science and technology.</p>
+                </div>
+                <div class="footer-partner">
+                    <img src="images/nasrda-logo.png" alt="NASRDA Logo" class="footer-partner-logo">
+                    <p>National Space Research and Development Agency — Pioneering Nigeria's space science and technology development.</p>
+                </div>
+            </div>
+
+            <!-- Column 2: Quick Links -->
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="programs.html">Programs</a></li>
+                    <li><a href="admissions.html">Admissions</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="collaborations.html">Collaborations</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+                <div class="footer-staff-mail">
+                    <a href="https://isse.edu.ng:2096/" target="_blank" class="btn btn-staff-mail">Staff Mail</a>
+                </div>
+            </div>
+
+            <!-- Column 3 & 4: Contact Us + Follow Us side by side, Newsletter underneath -->
+            <div class="footer-contact-social-wrapper">
+                <div class="footer-contact-social-row">
+                    <div class="footer-contact">
+                        <h4>Contact Us</h4>
+                        <ul>
+                            <li class="contact-location">
+                                <img src="icons/location.png" alt="Location" class="footer-contact-icon">
+                                Obasanjo Space Centre, Km 17, Airport Road, Lugbe, Abuja
+                            </li>
+                            <li class="contact-email">
+                                <img src="icons/email.png" alt="Email" class="footer-contact-icon">
+                                admissions@isse.edu.ng
+                            </li>
+                            <li class="contact-phone">
+                                <img src="icons/phone.png" alt="Phone" class="footer-contact-icon">
+                                +234(0)9035652894
+                            </li>
+                        </ul>
+                    </div>
+
+                                        <div class="footer-social">
+                        <h4>Follow Us</h4>
+                        <div class="social-icons">
+                            <a href="https://www.facebook.com/p/Institute-of-Space-Science-and-Engineering-Abuja-100057449769077/" target="_blank" rel="noopener"><img src="icons/facebook.png" alt="Facebook"></a>
+                            <a href="https://www.instagram.com/isse_nasrda/" target="_blank" rel="noopener"><img src="icons/instagram.png" alt="Instagram"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Newsletter spans across both Contact Us and Follow Us -->
+                <div class="footer-newsletter">
+                    <h4>Subscribe to Our Newsletter</h4>
+                    <p>Get the latest news from ISSE delivered to your inbox</p>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" id="newsletterEmail" placeholder="your.name@example.com" aria-label="Your email address" autocomplete="email" required>
+                        <button type="submit" id="newsletterButton">Subscribe</button>
+                    </form>
+                    <p class="newsletter-note" id="newsletterNote" role="status" aria-live="polite"></p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 Institute of Space Science and Engineering. All rights reserved.</p>
+            <p class="footer-bottom-links">
+                <a href="privacy-policy.html">Privacy Policy</a>
+            </p>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

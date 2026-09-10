@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscribers - ISSE Admin</title>
+    <link rel="icon" type="image/png" href="../images/new-logo.png">
+    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .admin-panel { display: flex; min-height: 100vh; background-color: #F5F7FA; }
+        .admin-sidebar { width: 260px; background-color: #0B1A3A; color: #FFFFFF; padding: 20px 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+        .admin-sidebar .logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; text-align: center; }
+        .admin-sidebar .logo img { height: 45px; width: auto; margin: 0 auto 8px; }
+        .admin-sidebar .logo h3 { font-size: 16px; color: #FFFFFF; margin: 0; }
+        .admin-sidebar .logo p { font-size: 12px; color: #B0C4DE; margin: 0; }
+        .admin-sidebar .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #B0C4DE; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; font-size: 14px; font-weight: 500; }
+        .admin-sidebar .nav-item:hover { background-color: rgba(255,255,255,0.05); color: #FFFFFF; }
+        .admin-sidebar .nav-item.active { background-color: rgba(212,168,67,0.1); color: #D4A843; border-left-color: #D4A843; }
+        .admin-sidebar .nav-item .icon { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+        .admin-sidebar .nav-item.logout { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+        .admin-sidebar .nav-item.logout .icon { filter: brightness(0) saturate(100%) invert(48%) sepia(71%) saturate(423%) hue-rotate(340deg) brightness(95%) contrast(94%); }
+        .admin-sidebar .nav-item.logout:hover { background-color: rgba(231,76,60,0.1); }
+        .admin-main { margin-left: 260px; padding: 30px; flex: 1; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #E8ECF0; }
+        .admin-header h1 { font-size: 28px; color: #0B1A3A; margin: 0; }
+        .admin-header .admin-info { display: flex; align-items: center; gap: 15px; font-size: 14px; color: #2C3E50; }
+        .admin-header .admin-info .role-badge { background-color: #D4A843; color: #0B1A3A; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .admin-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; background: none; border: none; }
+        .admin-hamburger span { display: block; width: 25px; height: 3px; background-color: #0B1A3A; border-radius: 3px; }
+
+        .admin-actions { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; align-items: center; }
+        .admin-actions .btn { padding: 10px 25px; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s ease; }
+.admin-actions .btn img { width: 24px; height: 24px; object-fit: contain; }
+.admin-actions .btn-primary { background-color: #D4A843; color: #0B1A3A; }
+.admin-actions .btn-primary:hover { background-color: #C49A3A; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(212, 168, 67, 0.3); }
+.admin-actions .btn-secondary { background-color: #0B1A3A; color: #FFFFFF; }
+.admin-actions .btn-secondary:hover { background-color: #1A2A5A; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(11, 26, 58, 0.3); }
+        .admin-actions .btn-secondary { background-color: #0B1A3A; color: #FFFFFF; }
+        .admin-actions .btn-secondary:hover { background-color: #1A2A5A; }
+        .admin-table-wrapper { background: #FFFFFF; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); overflow-x: auto; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .admin-table th { background-color: #F5F7FA; padding: 12px 15px; text-align: left; font-weight: 600; color: #0B1A3A; border-bottom: 2px solid #E8ECF0; }
+        .admin-table td { padding: 12px 15px; border-bottom: 1px solid #F5F7FA; color: #2C3E50; }
+        .admin-table tr:hover { background-color: #FAFBFC; }
+        .admin-table .actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .admin-table .btn-small { padding: 6px 10px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 4px; }
+        .admin-table .btn-small img { width: 14px; height: 14px; object-fit: contain; }
+        .btn-delete { background-color: #E74C3C; color: #FFFFFF; }
+        .btn-delete:hover { background-color: #C0392B; }
+        .btn-edit { background-color: #27AE60; color: #FFFFFF; }
+        .btn-edit:hover { background-color: #1E8449; }
+        .status-active { color: #27AE60; font-weight: 600; }
+        .status-unsubscribed { color: #E74C3C; font-weight: 600; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-overlay.visible { display: flex; }
+        .modal-box { background: #FFFFFF; border-radius: 16px; padding: 35px 40px; width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
+        .modal-box h2 { font-size: 24px; color: #0B1A3A; margin-bottom: 20px; }
+        .modal-box .form-group { margin-bottom: 18px; }
+        .modal-box .form-group label { display: block; font-size: 14px; font-weight: 600; color: #0B1A3A; margin-bottom: 5px; }
+        .modal-box .form-group textarea { width: 100%; padding: 12px 15px; border: 1px solid #E8ECF0; border-radius: 8px; font-size: 14px; font-family: 'Inter', sans-serif; resize: vertical; min-height: 200px; }
+        .modal-box .form-group textarea:focus { outline: none; border-color: #D4A843; }
+        .modal-box .form-group .hint { font-size: 12px; color: #7F8C8D; margin-top: 6px; display: block; }
+        .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+        .modal-actions .btn { padding: 10px 30px; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; }
+        .modal-actions .btn img { width: 16px; height: 16px; object-fit: contain; }
+        .btn-cancel { background-color: #E8ECF0; color: #2C3E50; }
+        .btn-cancel:hover { background-color: #D5D8DC; }
+        .import-summary { margin-top: 15px; padding: 12px 16px; border-radius: 8px; font-size: 14px; display: none; }
+        .import-summary.success { display: block; background: #d4edda; color: #155724; }
+        .import-summary.error { display: block; background: #f8d7da; color: #721c24; }
+        .import-summary.info { display: block; background: #cce5ff; color: #004085; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: #7F8C8D; }
+        .empty-state .icon { width: 48px; height: 48px; object-fit: contain; margin-bottom: 10px; }
+
+        .stats-badge {
+            display: inline-block;
+            background: #D4A843;
+            color: #0B1A3A;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        /* Admin Dropdown */
+        .admin-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .admin-dropdown-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            color: #2C3E50;
+            font-family: 'Inter', sans-serif;
+        }
+        .admin-dropdown-btn:hover { background-color: rgba(0,0,0,0.05); }
+        .dropdown-arrow { font-size: 10px; transition: transform 0.3s ease; }
+        .admin-dropdown-btn.active .dropdown-arrow { transform: rotate(180deg); }
+        .admin-dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 110%;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            min-width: 180px;
+            padding: 8px 0;
+            z-index: 1000;
+            border: 1px solid #E8ECF0;
+        }
+        .admin-dropdown-menu.show { display: block; }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            color: #2C3E50;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .dropdown-item:hover { background-color: #F5F7FA; }
+        .dropdown-divider { border: none; border-top: 1px solid #E8ECF0; margin: 4px 12px; }
+
+        @media (max-width: 768px) {
+            .admin-sidebar { transform: translateX(-100%); width: 280px; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 20px; }
+            .admin-hamburger { display: flex; }
+            .admin-header h1 { font-size: 22px; }
+            .modal-box { padding: 25px 20px; margin: 20px; }
+        }
+        @media (max-width: 480px) {
+            .admin-table { font-size: 12px; }
+            .admin-table th, .admin-table td { padding: 8px 10px; }
+            .admin-actions { flex-direction: column; }
+            .admin-actions .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-panel">
+                <div class="sidebar-skeleton" aria-hidden="true"><div class="skel-logo"></div><div class="skel-line" style="width:70%;margin:0 auto 24px;"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div></div>
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="logo">
+                <img src="../images/new-logo.png" alt="ISSE Logo">
+                <h3>ISSE Admin</h3>
+                <p>Institute of Space Science &amp; Engineering</p>
+            </div>
+            <a href="admin-dashboard.html" class="nav-item" id="navDashboard">
+                <img src="../icons/dashboard-icon.png" alt="Dashboard" class="icon"> Dashboard
+            </a>
+            <a href="admin-news.html" class="nav-item" id="navNews">
+                <img src="../icons/news-icon-admin.png" alt="News" class="icon"> News Management
+            </a>
+            <a href="admin-subscribers.html" class="nav-item active" id="navSubscribers">
+                <img src="../icons/subscribers-icon.png" alt="Subscribers" class="icon"> Subscribers
+            </a>
+            <a href="admin-messages.html" class="nav-item" id="navMessages">
+                <img src="../icons/messages-icon.png" alt="Messages" class="icon"> Contact Messages
+            </a>
+            <a href="admin-admins.html" class="nav-item" id="navAdmins">
+                <img src="../icons/admins-icon.png" alt="Admins" class="icon"> Admin Management
+            </a>
+            <a href="admin-audit.html" class="nav-item" id="navAudit">
+                <img src="../icons/audit-icon.png" alt="Audit" class="icon"> Audit Log
+            </a>
+            <a href="admin-banners.html" class="nav-item" id="navBanners">
+    <img src="icons/banner-icon.png" alt="Banners" class="icon"> Banners
+</a>
+<a href="admin-content.html" class="nav-item" id="navContent">
+    <img src="icons/content-icon.png" alt="Content" class="icon"> Site Content
+</a>
+<a href="admin-programs.html" class="nav-item" id="navPrograms">
+    <img src="icons/programs-icon.png" alt="Programs" class="icon"> Programs
+</a>
+<a href="#" class="nav-item" id="navAcademyPanel">
+    <img src="icons/academy-icon.png" alt="Academy Panel" class="icon"> Academy Panel
+</a>
+            <a href="#" class="nav-item logout" id="logoutBtn">
+                <img src="../icons/logout-icon.png" alt="Logout" class="icon"> Logout
+            </a>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="admin-hamburger" id="adminHamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <h1>Subscribers <span id="subscriberCount" class="stats-badge">0</span></h1>
+                </div>
+                <div class="admin-info">
+                    <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+        <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+    </button>
+                    <div class="admin-dropdown">
+                        <button class="admin-dropdown-btn" id="adminDropdownBtn">
+                            <span id="adminNameDisplay">Admin</span>
+                            <span class="role-badge" id="adminRoleDisplay">Super Admin</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="admin-dropdown-menu" id="adminDropdownMenu">
+                            <a href="admin-profile.html" class="dropdown-item">
+                                <span>👤</span> Profile
+                            </a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item" id="logoutDropdownBtn">
+                                <span>🚪</span> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-actions">
+                <button class="btn btn-primary" id="exportSubscribersBtn">
+                    <img src="../icons/export-icon.png" alt="Export"> Export CSV
+                </button>
+                <button class="btn btn-secondary" id="importSubscribersBtn">
+                    <img src="../icons/import-icon.png" alt="Import" style="filter: brightness(0) invert(1);"> Import Emails
+                </button>
+                <p class="admins-hint" id="subscriberCountText"></p>
+            </div>
+
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Email</th>
+                            <th>Subscribed Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subscribersTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== IMPORT MODAL ==================== -->
+    <div class="modal-overlay" id="importModal">
+        <div class="modal-box">
+            <h2>Import Emails</h2>
+            <p style="color: #7F8C8D; font-size: 14px; margin-bottom: 18px;">
+                Paste a list of email addresses below. One email per line.
+            </p>
+            <form id="importForm">
+                <div class="form-group">
+                    <label for="importEmails">Email Addresses</label>
+                    <textarea id="importEmails" placeholder="john@example.com&#10;jane@example.com&#10;peter@example.com" required></textarea>
+                    <span class="hint">One email per line. Existing subscribers will be skipped automatically.</span>
+                </div>
+                <div id="importSummary" class="import-summary"></div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary" id="importSubmitBtn">
+                        <img src="../icons/add-icon.png" alt="Import"> Import Emails
+                    </button>
+                    <button type="button" class="btn btn-cancel" id="cancelImportBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+<script src="supabase-config.js"></script>
+    <script>
+    // ==================== SESSION CHECK ====================
+    initDarkModeToggle();
+    (async function() {
+        const admin = await getCurrentAdmin();
+        if (!admin) {
+            window.location.replace('admin-login.html');
+            return;
+        }
+
+        // Subscribers is Super Admin / Admin only
+        if (admin.role !== 'Super Admin' && admin.role !== 'Admin') {
+            window.location.replace('admin-dashboard.html');
+            return;
+        }
+
+
+        document.getElementById('adminNameDisplay').textContent = admin.username;
+        document.getElementById('adminRoleDisplay').textContent = admin.role;
+        
+        // Show/Hide sidebar items based on role
+        const role = admin.role;
+        document.getElementById('navAcademyPanel').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+document.getElementById('navAcademyPanel').href = ACADEMY_URL;
+
+        document.getElementById('navSubscribers').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+                    document.getElementById('navMessages').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+        document.getElementById('navAdmins').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+        document.getElementById('navAudit').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+        document.body.classList.add('nav-ready');
+       
+    })();
+
+    // ==================== LOAD SUBSCRIBERS ====================
+    async function loadSubscribers() {
+        const tbody = document.getElementById('subscribersTableBody');
+        try {
+            const { data: subscribers, error } = await db
+                .from('subscribers')
+                .select('*')
+                .order('subscribed_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            const rows = subscribers || [];
+            document.getElementById('subscriberCount').textContent = rows.length;
+            const active = rows.filter(s => s.status === 'active').length;
+            document.getElementById('subscriberCountText').textContent =
+                `${active} active, ${rows.length - active} unsubscribed.`;
+            
+            if (!rows.length) {
+                tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><img src="../icons/empty-icon.png" alt="No subscribers" class="icon"><p>No subscribers yet.</p></div></td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = rows.map((sub, index) => {
+                const statusText = sub.status || 'active';
+                const statusClass = statusText === 'active' ? 'status-active' : 'status-unsubscribed';
+                return `<tr>
+                    <td>${index + 1}</td>
+                    <td><strong>${escapeHtml(sub.email)}</strong></td>
+                    <td>${sub.subscribed_at ? new Date(sub.subscribed_at).toLocaleString() : 'N/A'}</td>
+                    <td><span class="${statusClass}">${escapeHtml(statusText)}</span></td>
+                    <td><div class="actions">
+    ${statusText === 'active'
+        ? `<button class="btn-small btn-delete" onclick="unsubscribe('${escapeJs(sub.id)}','${escapeJs(sub.email)}')">🔕 Unsubscribe</button>`
+        : `<button class="btn-small btn-edit" onclick="resubscribe('${escapeJs(sub.id)}','${escapeJs(sub.email)}')">🔔 Resubscribe</button>`}
+    <button class="btn-small btn-delete" onclick="deleteSubscriber('${escapeJs(sub.id)}','${escapeJs(sub.email)}')">🗑️ Delete</button>
+</div></td>
+                </tr>`;
+            }).join('');
+        } catch (error) {
+            console.error('Error loading subscribers:', error);
+            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><p style="color:red;">❌ Error loading subscribers. Please check console.</p></div></td></tr>`;
+        }
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+    function escapeJs(value) { return String(value ?? '').replaceAll("'", "\\'"); }
+
+    async function updateSubscriberStatus(id, email, status, actionText) {
+        if (!confirm(`${status === 'active' ? 'Are you sure you want to resubscribe' : 'Are you sure you want to unsubscribe'} ${email}?`)) return;
+        try {
+            const { error } = await db
+                .from('subscribers')
+                .update({ status })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // Use the global logActivity from supabase-config.js
+            const admin = await getCurrentAdmin();
+            await logActivity(`${actionText}: ${email}`, admin);
+
+            await loadSubscribers();
+            alert(`✅ ${actionText} successful!`);
+        } catch (error) {
+            console.error('Error updating subscriber:', error);
+            alert(`❌ Error updating subscriber: ${error.message}`);
+        }
+    }
+
+    async function unsubscribe(id, email) {
+        await updateSubscriberStatus(id, email, 'unsubscribed', 'Unsubscribed');
+    }
+
+    async function resubscribe(id, email) {
+        await updateSubscriberStatus(id, email, 'active', 'Resubscribed');
+    }
+
+    async function deleteSubscriber(id, email) {
+        if (!confirm(`Are you sure you want to permanently delete ${email} from the subscribers list?`)) return;
+        try {
+            const { error } = await db
+                .from('subscribers')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            const admin = await getCurrentAdmin();
+            await logActivity(`Deleted subscriber: ${email}`, admin);
+
+            await loadSubscribers();
+            alert(`✅ Subscriber deleted successfully!`);
+        } catch (error) {
+            console.error('Error deleting subscriber:', error);
+            alert(`❌ Error deleting subscriber: ${error.message}`);
+        }
+    }
+
+    document.getElementById('exportSubscribersBtn').addEventListener('click', async function() {
+        try {
+            const { data: subscribers, error } = await db
+                .from('subscribers')
+                .select('*')
+                .order('subscribed_at', { ascending: false });
+            
+            if (error) throw error;
+            if (!subscribers?.length) { alert('No subscribers to export.'); return; }
+            
+            let csv = 'Email,Subscribed Date,Status\n';
+            subscribers.forEach(sub => {
+                const date = sub.subscribed_at ? new Date(sub.subscribed_at).toLocaleString() : 'N/A';
+                csv += `"${String(sub.email || '').replace(/"/g, '""')}","${date}","${sub.status || 'active'}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `subscribers_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            const admin = await getCurrentAdmin();
+            await logActivity('Exported subscribers CSV', admin);
+        } catch (error) {
+            console.error('Error exporting subscribers:', error);
+            alert(`Error exporting subscribers: ${error.message || error}`);
+        }
+    });
+
+    // ==================== IMPORT FUNCTIONALITY ====================
+    const importModal = document.getElementById('importModal');
+    const importForm = document.getElementById('importForm');
+    const importEmails = document.getElementById('importEmails');
+    const importSummary = document.getElementById('importSummary');
+    const importSubmitBtn = document.getElementById('importSubmitBtn');
+
+    document.getElementById('importSubscribersBtn').addEventListener('click', function() {
+        importEmails.value = '';
+        importSummary.className = 'import-summary';
+        importSummary.textContent = '';
+        importModal.classList.add('visible');
+    });
+
+    document.getElementById('cancelImportBtn').addEventListener('click', function() {
+        importModal.classList.remove('visible');
+    });
+
+    importModal.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('visible');
+    });
+
+    importForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const rawEmails = importEmails.value.trim();
+        if (!rawEmails) {
+            showImportSummary('Please paste at least one email address.', 'error');
+            return;
+        }
+
+        const emailList = rawEmails
+            .split(/\n|,|;/)
+            .map(e => e.trim().toLowerCase())
+            .filter(e => e.length > 0);
+
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const valid = [];
+        const invalid = [];
+
+        emailList.forEach(email => {
+            if (emailPattern.test(email)) {
+                valid.push(email);
+            } else {
+                invalid.push(email);
+            }
+        });
+
+        if (valid.length === 0) {
+            showImportSummary('No valid email addresses found. Please check the format.', 'error');
+            return;
+        }
+
+        importSubmitBtn.disabled = true;
+        importSubmitBtn.innerHTML = '<span>Importing…</span>';
+
+        let added = 0;
+        let skipped = 0;
+
+        for (const email of valid) {
+            try {
+                const { error } = await db.from('subscribers').insert({
+                    email: email,
+                    status: 'active',
+                });
+
+                if (error) {
+                    if (error.code === '23505') {
+                        skipped++;
+                    } else {
+                        console.error('Error adding:', email, error);
+                    }
+                } else {
+                    added++;
+                }
+            } catch (err) {
+                console.error('Error adding:', email, err);
+            }
+        }
+
+        const admin = await getCurrentAdmin();
+        await logActivity(`Imported ${added} subscribers via bulk upload`, admin);
+
+        let message = `${added} new subscriber${added !== 1 ? 's' : ''} added.`;
+        if (skipped > 0) {
+            message += ` ${skipped} duplicate${skipped !== 1 ? 's' : ''} skipped.`;
+        }
+        if (invalid.length > 0) {
+            message += ` ${invalid.length} invalid email${invalid.length !== 1 ? 's' : ''} ignored.`;
+        }
+
+        showImportSummary('✅ ' + message, 'success');
+
+        importSubmitBtn.disabled = false;
+        importSubmitBtn.innerHTML = '<img src="../icons/add-icon.png" alt="Import"> Import Emails';
+
+        await loadSubscribers();
+    });
+
+    function showImportSummary(message, type) {
+        importSummary.textContent = message;
+        importSummary.className = 'import-summary ' + type;
+    }
+
+    // ==================== ADMIN DROPDOWN ====================
+    const dropdownBtn = document.getElementById('adminDropdownBtn');
+    const dropdownMenu = document.getElementById('adminDropdownMenu');
+
+    if (dropdownBtn && dropdownMenu) {
+        dropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('active');
+            dropdownMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownBtn.classList.remove('active');
+                dropdownMenu.classList.remove('show');
+            }
+        });
+
+                const logoutDropdownBtn = document.getElementById('logoutDropdownBtn');
+        if (logoutDropdownBtn) {
+            logoutDropdownBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                const admin = await getCurrentAdmin();
+                await logActivity('Logout', admin, {});
+                                await db.auth.signOut();
+                window.location.replace('admin-login.html');
+            });
+        }
+    }
+
+    // ==================== HAMBURGER TOGGLE ====================
+    document.getElementById('adminHamburger').addEventListener('click', function() {
+        document.getElementById('adminSidebar').classList.toggle('open');
+    });
+
+    // ==================== LOGOUT ====================
+        document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+        e.preventDefault();
+        const admin = await getCurrentAdmin();
+                await logActivity('Logout', admin, {});
+        await db.auth.signOut();
+        window.location.replace('admin-login.html');
+    });
+
+    // ==================== INIT ====================
+    loadSubscribers();
+</script>
+</body>
+</html>

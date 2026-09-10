@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Thread - ISSE Admin</title>
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- EmailJS SDK -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+</script>
+<script type="text/javascript">
+    (function() {
+        emailjs.init({
+            publicKey: "GKH7pnImZKwl7k3vZ",
+        });
+    })();
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .admin-panel { display: flex; min-height: 100vh; background-color: #F5F7FA; }
+        .admin-sidebar { width: 260px; background-color: #0B1A3A; color: #FFFFFF; padding: 20px 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+        .admin-sidebar .logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; text-align: center; }
+        .admin-sidebar .logo img { height: 45px; width: auto; margin: 0 auto 8px; }
+        .admin-sidebar .logo h3 { font-size: 16px; color: #FFFFFF; margin: 0; }
+        .admin-sidebar .logo p { font-size: 12px; color: #B0C4DE; margin: 0; }
+        .admin-sidebar .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #B0C4DE; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; font-size: 14px; font-weight: 500; }
+        .admin-sidebar .nav-item:hover { background-color: rgba(255,255,255,0.05); color: #FFFFFF; }
+        .admin-sidebar .nav-item.active { background-color: rgba(212,168,67,0.1); color: #D4A843; border-left-color: #D4A843; }
+        .admin-sidebar .nav-item .icon { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+        .admin-sidebar .nav-item.logout { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+        .admin-sidebar .nav-item.logout .icon { filter: brightness(0) saturate(100%) invert(48%) sepia(71%) saturate(423%) hue-rotate(340deg) brightness(95%) contrast(94%); }
+        .admin-sidebar .nav-item.logout:hover { background-color: rgba(231,76,60,0.1); }
+        .admin-main { margin-left: 260px; padding: 30px; flex: 1; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #E8ECF0; }
+        .admin-header h1 { font-size: 28px; color: #0B1A3A; margin: 0; }
+        .admin-header .admin-info { display: flex; align-items: center; gap: 15px; font-size: 14px; color: #2C3E50; }
+        .admin-header .admin-info .role-badge { background-color: #D4A843; color: #0B1A3A; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .admin-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; background: none; border: none; }
+        .admin-hamburger span { display: block; width: 25px; height: 3px; background-color: #0B1A3A; border-radius: 3px; }
+
+        /* Admin Dropdown (shared) */
+        .admin-dropdown { position: relative; display: inline-block; }
+        .admin-dropdown-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 6px 12px; border-radius: 8px; transition: background-color 0.3s ease; font-size: 14px; color: #2C3E50; font-family: 'Inter', sans-serif; }
+        .admin-dropdown-btn:hover { background-color: rgba(0,0,0,0.05); }
+        .dropdown-arrow { font-size: 10px; transition: transform 0.3s ease; }
+        .admin-dropdown-btn.active .dropdown-arrow { transform: rotate(180deg); }
+        .admin-dropdown-menu { display: none; position: absolute; right: 0; top: 110%; background: #FFFFFF; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); min-width: 180px; padding: 8px 0; z-index: 1000; border: 1px solid #E8ECF0; }
+        .admin-dropdown-menu.show { display: block; }
+        .dropdown-item { display: flex; align-items: center; gap: 10px; padding: 10px 18px; color: #2C3E50; text-decoration: none; font-size: 14px; transition: background-color 0.3s ease; cursor: pointer; }
+        .dropdown-item:hover { background-color: #F5F7FA; }
+        .dropdown-divider { border: none; border-top: 1px solid #E8ECF0; margin: 4px 12px; }
+
+        /* ==================== THREAD PAGE SPECIFIC ==================== */
+        .thread-back-row { display: flex; align-items: center; gap: 12px; }
+        .thread-back-link { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; color: #0B1A3A; text-decoration: none; font-size: 18px; transition: background-color 0.2s ease; flex-shrink: 0; }
+        .thread-back-link:hover { background-color: #E8ECF0; }
+        body.dark-mode .thread-back-link { color: #FFFFFF; }
+body.dark-mode .thread-back-link:hover { background-color: #D4A843; }
+
+        .thread-wrapper { background: #FFFFFF; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); overflow: hidden; }
+
+        .thread-contact-card { display: flex; align-items: center; gap: 16px; padding: 20px 24px; border-bottom: 1px solid #E8ECF0; flex-wrap: wrap; }
+        .thread-avatar { width: 48px; height: 48px; border-radius: 50%; background-color: #E3F0FF; color: #0B1A3A; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+        .thread-contact-meta { flex: 1; min-width: 200px; }
+        .thread-contact-meta h2 { font-size: 17px; color: #0B1A3A; margin: 0 0 2px; }
+        .thread-contact-meta .thread-email { font-size: 13px; color: #7F8C8D; margin: 0; }
+        .thread-contact-details { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; font-size: 13px; color: #7F8C8D; }
+        .thread-contact-details span { display: flex; align-items: center; gap: 6px; }
+
+        .thread-body { padding: 24px; min-height: 300px; max-height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; background-color: #FAFBFC; }
+
+        .thread-bubble-row { display: flex; flex-direction: column; max-width: 70%; }
+        .thread-bubble-row.incoming { align-self: flex-start; align-items: flex-start; }
+        .thread-bubble-row.outgoing { align-self: flex-end; align-items: flex-end; }
+        .thread-bubble { padding: 14px 16px; border-radius: 14px; font-size: 14px; line-height: 1.5; color: #2C3E50; white-space: pre-wrap; word-break: break-word; }
+        .thread-bubble-row.incoming .thread-bubble { background-color: #FFFFFF; border: 1px solid #E8ECF0; border-bottom-left-radius: 4px; }
+        .thread-bubble-row.outgoing .thread-bubble { background-color: #DCEBFF; border-bottom-right-radius: 4px; }
+        .thread-bubble-meta { font-size: 11px; color: #7F8C8D; margin-top: 4px; padding: 0 4px; }
+
+        .thread-reply-box { border-top: 1px solid #E8ECF0; padding: 16px 24px; display: flex; gap: 12px; align-items: flex-end; background: #FFFFFF; }
+        .thread-reply-box textarea { flex: 1; resize: none; min-height: 46px; max-height: 140px; padding: 12px 15px; border: 1px solid #E8ECF0; border-radius: 10px; font-size: 14px; font-family: 'Inter', sans-serif; }
+        .thread-reply-box textarea:focus { outline: none; border-color: #D4A843; box-shadow: 0 0 0 3px rgba(212,168,67,0.1); }
+        .thread-reply-box .btn-send { background-color: #0B1A3A; color: #FFFFFF; border: none; padding: 12px 22px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; transition: background-color 0.2s ease; }
+        .thread-reply-box .btn-send:hover { background-color: #16255A; }
+
+        .btn-delete-thread { background-color: #E74C3C; color: #FFFFFF; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background-color 0.2s ease; }
+        .btn-delete-thread:hover { background-color: #C0392B; }
+
+        .thread-loading, .thread-error { text-align: center; padding: 60px 20px; color: #7F8C8D; }
+        /* ==================== THREAD PAGE DARK MODE ==================== */
+body.dark-mode .thread-wrapper { background-color: #122240; }
+body.dark-mode .thread-contact-card { border-bottom-color: #1A3A5A; }
+body.dark-mode .thread-avatar { background-color: #1A3A5A; color: #E8ECF0; }
+body.dark-mode .thread-contact-meta h2 { color: #E8ECF0; }
+body.dark-mode .thread-contact-meta .thread-email,
+body.dark-mode .thread-contact-details { color: #B0C4DE; }
+
+body.dark-mode .thread-body { background-color: #0A1628; }
+body.dark-mode .thread-bubble { color: #E8ECF0; }
+body.dark-mode .thread-bubble-row.incoming .thread-bubble {
+    background-color: #0D1A30;
+    border-color: #1A3A5A;
+}
+body.dark-mode .thread-bubble-row.outgoing .thread-bubble { background-color: #1A3A5A; }
+body.dark-mode .thread-bubble-meta { color: #B0C4DE; }
+
+body.dark-mode .thread-reply-box {
+    background-color: #122240;
+    border-top-color: #1A3A5A;
+}
+body.dark-mode .thread-reply-box textarea {
+    background-color: #0D1A30;
+    border-color: #1A3A5A;
+    color: #E8ECF0;
+}
+body.dark-mode .thread-reply-box textarea::placeholder { color: #7F8C8D; }
+
+body.dark-mode .btn-send {
+    background-color: #D4A843;
+    color: #0B1A3A;
+}
+body.dark-mode .btn-send:hover { background-color: #C49A3A; }
+
+        @media (max-width: 768px) {
+            .admin-sidebar { transform: translateX(-100%); width: 280px; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 20px; }
+            .admin-hamburger { display: flex; }
+            .admin-header h1 { font-size: 20px; }
+            .thread-bubble-row { max-width: 88%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-panel">
+        <div class="sidebar-skeleton" aria-hidden="true"><div class="skel-logo"></div><div class="skel-line" style="width:70%;margin:0 auto 24px;"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div></div>
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="logo">
+                <img src="images/new-logo.png" alt="ISSE Logo">
+                <h3>ISSE Admin</h3>
+                <p>Institute of Space Science & Engineering</p>
+            </div>
+            <a href="admin-dashboard.html" class="nav-item" id="navDashboard">
+                <img src="icons/dashboard-icon.png" alt="Dashboard" class="icon"> Dashboard
+            </a>
+            <a href="admin-news.html" class="nav-item" id="navNews">
+                <img src="icons/news-icon-admin.png" alt="News" class="icon"> News Management
+            </a>
+            <a href="admin-subscribers.html" class="nav-item" id="navSubscribers">
+                <img src="icons/subscribers-icon.png" alt="Subscribers" class="icon"> Subscribers
+            </a>
+            <a href="admin-messages.html" class="nav-item active" id="navMessages">
+                <img src="icons/messages-icon.png" alt="Messages" class="icon"> Contact Messages
+            </a>
+            <a href="admin-admins.html" class="nav-item" id="navAdmins">
+                <img src="icons/admins-icon.png" alt="Admins" class="icon"> Admin Management
+            </a>
+            <a href="admin-audit.html" class="nav-item" id="navAudit">
+                <img src="icons/audit-icon.png" alt="Audit" class="icon"> Audit Log
+            </a>
+            <a href="admin-banners.html" class="nav-item" id="navBanners">
+                <img src="icons/banner-icon.png" alt="Banners" class="icon"> Banners
+            </a>
+            <a href="admin-content.html" class="nav-item" id="navContent">
+                <img src="icons/content-icon.png" alt="Content" class="icon"> Site Content
+            </a>
+            <a href="admin-programs.html" class="nav-item" id="navPrograms">
+                <img src="icons/programs-icon.png" alt="Programs" class="icon"> Programs
+            </a>
+            <a href="#" class="nav-item" id="navAcademyPanel">
+    <img src="icons/academy-icon.png" alt="Academy Panel" class="icon"> Academy Panel
+</a>
+            <a href="#" class="nav-item logout" id="logoutBtn">
+                <img src="icons/logout-icon.png" alt="Logout" class="icon"> Logout
+            </a>
+        </aside>
+
+        <main class="admin-main">
+            <div class="admin-header">
+                <div class="thread-back-row">
+                    <button class="admin-hamburger" id="adminHamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <a href="admin-messages.html" class="thread-back-link" aria-label="Back to Contact Messages">&#8592;</a>
+                    <h1>Contact Messages</h1>
+                </div>
+                <div class="admin-info">
+                    <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+        <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+    </button>
+                    <div class="admin-dropdown">
+                        <button class="admin-dropdown-btn" id="adminDropdownBtn">
+                            <span id="adminNameDisplay">Admin</span>
+                            <span class="role-badge" id="adminRoleDisplay">Super Admin</span>
+                            <span class="dropdown-arrow">&#9660;</span>
+                        </button>
+                        <div class="admin-dropdown-menu" id="adminDropdownMenu">
+                            <a href="admin-profile.html" class="dropdown-item">
+                                <span>&#128100;</span> Profile
+                            </a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item" id="logoutDropdownBtn">
+                                <span>&#128682;</span> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="threadContainer">
+                <div class="thread-loading">Loading message...</div>
+            </div>
+        </main>
+    </div>
+
+<script src="supabase-config.js"></script>
+<script>
+    const supabaseClient = db;
+    let currentAdmin = null;
+    let currentMessageId = null;
+
+    function getMessageIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('id');
+    }
+
+    function initials(name) {
+        if (!name) return '?';
+        return name.trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('');
+    }
+
+    // ==================== SESSION CHECK ====================
+    initDarkModeToggle();
+    (async function() {
+        currentAdmin = await getCurrentAdmin();
+        if (!currentAdmin) {
+            window.location.replace('admin-login.html');
+            return;
+        }
+
+        if (currentAdmin.role !== 'Super Admin' && currentAdmin.role !== 'Admin') {
+            window.location.replace('admin-dashboard.html');
+            return;
+        }
+
+        document.getElementById('adminNameDisplay').textContent = currentAdmin.username;
+        document.getElementById('adminRoleDisplay').textContent = currentAdmin.role;
+        document.getElementById('navAcademyPanel').style.display = (currentAdmin.role === 'Super Admin') ? 'flex' : 'none';
+document.getElementById('navAcademyPanel').href = ACADEMY_URL;
+        document.body.classList.add('nav-ready');
+      
+
+        currentMessageId = getMessageIdFromUrl();
+        if (!currentMessageId) {
+            document.getElementById('threadContainer').innerHTML =
+                '<div class="thread-error">No message specified.</div>';
+            return;
+        }
+
+        await loadThread();
+    })();
+
+    async function loadThread() {
+        const container = document.getElementById('threadContainer');
+        try {
+            const { data: msg, error: msgError } = await supabaseClient
+                .from('contact_messages')
+                .select('*')
+                .eq('id', currentMessageId)
+                .single();
+            if (msgError) throw msgError;
+
+            const { data: replies, error: repliesError } = await supabaseClient
+                .from('message_replies')
+                .select('*')
+                .eq('message_id', currentMessageId)
+                .order('created_at', { ascending: true });
+            if (repliesError) throw repliesError;
+
+            renderThread(msg, replies || []);
+
+            // Mark as read (fire and forget)
+            supabaseClient.from('contact_messages').update({ read: true }).eq('id', currentMessageId)
+                .then(({ error }) => { if (error) console.warn('Could not mark as read:', error); });
+
+        } catch (error) {
+            console.error('Error loading thread:', error);
+            container.innerHTML = '<div class="thread-error">Could not load this message. It may have been deleted.</div>';
+        }
+    }
+
+    function renderThread(msg, replies) {
+        const container = document.getElementById('threadContainer');
+
+        const bubbles = [
+            `<div class="thread-bubble-row incoming">
+                <div class="thread-bubble">${escapeHtml(msg.message)}</div>
+                <div class="thread-bubble-meta">${escapeHtml(msg.name)} &middot; ${msg.date ? formatTimestamp(msg.date) : ''}</div>
+            </div>`,
+            ...replies.map(r => `
+            <div class="thread-bubble-row outgoing">
+                <div class="thread-bubble">${escapeHtml(r.body)}</div>
+                <div class="thread-bubble-meta">${escapeHtml(r.admin_name)} &middot; ${formatTimestamp(r.created_at)}</div>
+            </div>`)
+        ].join('');
+
+        container.innerHTML = `
+            <div class="thread-wrapper">
+                <div class="thread-contact-card">
+                    <div class="thread-avatar">${escapeHtml(initials(msg.name))}</div>
+                    <div class="thread-contact-meta">
+                        <h2>${escapeHtml(msg.name)}</h2>
+                        <p class="thread-email">${escapeHtml(msg.email)}</p>
+                        <div class="thread-contact-details">
+                            ${msg.phone ? `<span>&#128222; ${escapeHtml(msg.phone)}</span>` : ''}
+                            <span>&#128218; ${escapeHtml(msg.program || 'Not specified')}</span>
+                            <span>&#128197; ${msg.date ? formatTimestamp(msg.date) : 'N/A'}</span>
+                        </div>
+                    </div>
+                    <button class="btn-delete-thread" id="deleteThreadBtn">&#128465; Delete</button>
+                </div>
+
+                <div class="thread-body" id="threadBody">
+                    ${bubbles}
+                </div>
+
+                <div class="thread-reply-box">
+                    <textarea id="replyText" placeholder="Write a reply..." rows="1"></textarea>
+                    <button class="btn-send" id="sendReplyBtn">&#9993; Send reply</button>
+                </div>
+            </div>
+        `;
+
+        // Scroll thread to the latest message
+        const body = document.getElementById('threadBody');
+        body.scrollTop = body.scrollHeight;
+        document.getElementById('sendReplyBtn').addEventListener('click', sendReply);
+                document.getElementById('deleteThreadBtn').addEventListener('click', deleteThread);
+
+        
+    }
+
+    window.loadThread = loadThread;
+    async function sendReply() {
+    const textarea = document.getElementById('replyText');
+    const sendBtn = document.getElementById('sendReplyBtn');
+    const body = textarea.value.trim();
+    if (!body) return;
+
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending...';
+
+    try {
+        const { data: msg, error: msgError } = await supabaseClient
+            .from('contact_messages')
+            .select('email, name')
+            .eq('id', currentMessageId)
+            .single();
+        if (msgError) throw msgError;
+
+        const { error: insertError } = await supabaseClient
+            .from('message_replies')
+            .insert([{
+                message_id: currentMessageId,
+                admin_name: currentAdmin.username,
+                body: body
+            }]);
+        if (insertError) throw insertError;
+
+        if (typeof emailjs !== 'undefined') {
+            await emailjs.send('service_hwsisjp', 'template_s4cgwlp', {
+                to_email: msg.email,
+                email_subject: 'Reply to Your Enquiry',
+                header_title: 'Reply to Your Enquiry',
+                email_body: `<p>${escapeHtml(body).replace(/\n/g, '<br>')}</p>`
+            });
+        } else {
+            console.warn('EmailJS not loaded. Reply saved but not emailed.');
+        }
+
+        textarea.value = '';
+        await loadThread();
+
+    } catch (error) {
+        console.error('Error sending reply:', error);
+        alert('Error sending reply: ' + error.message);
+    } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = '✉ Send reply';
+    }
+}
+
+window.sendReply = sendReply;
+async function deleteThread() {
+    if (!confirm('Are you sure you want to delete this message?')) return;
+
+    try {
+        const { data: item } = await supabaseClient
+            .from('contact_messages')
+            .select('name')
+            .eq('id', currentMessageId)
+            .single();
+
+        const { error } = await supabaseClient
+            .from('contact_messages')
+            .delete()
+            .eq('id', currentMessageId);
+
+        if (error) throw error;
+
+        await logActivity('Deleted Message', currentAdmin, { name: item?.name || 'Unknown' });
+
+        alert('✅ Message deleted successfully!');
+        window.location.href = 'admin-messages.html';
+
+    } catch (error) {
+        console.error('Error deleting message:', error);
+        alert('Error deleting message: ' + error.message);
+    }
+}
+
+window.deleteThread = deleteThread;
+
+    document.getElementById('adminHamburger').addEventListener('click', () => document.getElementById('adminSidebar').classList.toggle('open'));
+    document.getElementById('logoutBtn').addEventListener('click', async e => {
+        e.preventDefault();
+        await logActivity('Logout', currentAdmin, {});
+        await db.auth.signOut();
+        window.location.replace('admin-login.html');
+    });
+
+    // ==================== ADMIN DROPDOWN ====================
+    const dropdownBtn = document.getElementById('adminDropdownBtn');
+    const dropdownMenu = document.getElementById('adminDropdownMenu');
+
+    if (dropdownBtn && dropdownMenu) {
+        dropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('active');
+            dropdownMenu.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownBtn.classList.remove('active');
+                dropdownMenu.classList.remove('show');
+            }
+        });
+
+        const logoutDropdownBtn = document.getElementById('logoutDropdownBtn');
+        if (logoutDropdownBtn) {
+            logoutDropdownBtn.addEventListener('click', async function(e) {
+                e.preventDefault();
+                await logActivity('Logout', currentAdmin, {});
+                await db.auth.signOut();
+                window.location.replace('admin-login.html');
+            });
+        }
+    }
+</script>
+</body>
+</html>

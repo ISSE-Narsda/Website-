@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News - Institute of Space Science & Engineering</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+<link rel="manifest" href="manifest.json">
+
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- ==================== HEADER / NAVIGATION ==================== -->
+<header>
+    <div class="container">
+        <div class="header-left">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="images/new-logo.png" alt="ISSE Logo" class="logo-img">
+                </a>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="programs.html">Programs</a></li>
+                    <li><a href="admissions.html">Admissions</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="collaborations.html">Collaborations</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </nav>
+        </div>
+        <div class="header-right">
+            <a href="https://isse.edu.ng:2096/" target="_blank" class="btn-staff-mail-header">Staff Mail</a>
+            <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+                <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+            </button>
+        </div>
+    </div>
+</header>
+
+    <!-- ==================== PAGE BANNER ==================== -->
+    <section class="page-banner news-banner" data-banner-page="news">
+        <div class="page-banner-overlay"></div>
+        <div class="container page-banner-content">
+            <h1 data-content-key="news_page_title">News & Announcements</h1>
+            <p class="banner-subtitle" data-content-key="news_page_subtitle">Stay updated with the latest from ISSE</p>
+        </div>
+    </section>
+
+    <!-- ==================== NEWS GRID ==================== -->
+    <section class="news-page">
+        <div class="container">
+            <div class="news-page-grid" id="newsPageGrid">
+                <!-- News loaded by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+    <!-- Decorative night sky. Animated entirely in CSS -->
+    <div class="footer-sky" aria-hidden="true">
+        <div class="star-layer star-layer-1"></div>
+        <div class="star-layer star-layer-2"></div>
+        <div class="star-layer star-layer-3"></div>
+        <span class="shooting-star shooting-star-1"></span>
+        <span class="shooting-star shooting-star-2"></span>
+        <span class="shooting-star shooting-star-3"></span>
+    </div>
+
+    <div class="container">
+        <div class="footer-grid">
+            <!-- Column 1: About -->
+            <div class="footer-about">
+                <img src="images/new-logo.png" alt="ISSE Logo" class="footer-logo-img">
+                <p>Institute of Space Science & Engineering — Advancing space science education and research in Nigeria and the African continent.</p>
+                <div class="footer-partner">
+                    <img src="images/aust-logo.png" alt="AUST Logo" class="footer-partner-logo">
+                    <p>African University of Science and Technology — A pan-African centre of excellence in science and technology.</p>
+                </div>
+                <div class="footer-partner">
+                    <img src="images/nasrda-logo.png" alt="NASRDA Logo" class="footer-partner-logo">
+                    <p>National Space Research and Development Agency — Pioneering Nigeria's space science and technology development.</p>
+                </div>
+            </div>
+
+            <!-- Column 2: Quick Links -->
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="programs.html">Programs</a></li>
+                    <li><a href="admissions.html">Admissions</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="collaborations.html">Collaborations</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+                <div class="footer-staff-mail">
+                    <a href="https://isse.edu.ng:2096/" target="_blank" class="btn btn-staff-mail">Staff Mail</a>
+                </div>
+            </div>
+
+            <!-- Column 3 & 4: Contact Us + Follow Us side by side, Newsletter underneath -->
+            <div class="footer-contact-social-wrapper">
+                <div class="footer-contact-social-row">
+                    <div class="footer-contact">
+                        <h4>Contact Us</h4>
+                        <ul>
+                            <li class="contact-location">
+                                <img src="icons/location.png" alt="Location" class="footer-contact-icon">
+                                Obasanjo Space Centre, Km 17, Airport Road, Lugbe, Abuja
+                            </li>
+                            <li class="contact-email">
+                                <img src="icons/email.png" alt="Email" class="footer-contact-icon">
+                                admissions@isse.edu.ng
+                            </li>
+                            <li class="contact-phone">
+                                <img src="icons/phone.png" alt="Phone" class="footer-contact-icon">
+                                +234(0)9035652894
+                            </li>
+                        </ul>
+                    </div>
+
+                                        <div class="footer-social">
+                        <h4>Follow Us</h4>
+                        <div class="social-icons">
+                            <a href="https://www.facebook.com/p/Institute-of-Space-Science-and-Engineering-Abuja-100057449769077/" target="_blank" rel="noopener"><img src="icons/facebook.png" alt="Facebook"></a>
+                            <a href="https://www.instagram.com/isse_nasrda/" target="_blank" rel="noopener"><img src="icons/instagram.png" alt="Instagram"></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Newsletter spans across both Contact Us and Follow Us -->
+                <div class="footer-newsletter">
+                    <h4>Subscribe to Our Newsletter</h4>
+                    <p>Get the latest news from ISSE delivered to your inbox</p>
+                    <form class="newsletter-form" id="newsletterForm">
+                        <input type="email" id="newsletterEmail" placeholder="your.name@example.com" aria-label="Your email address" autocomplete="email" required>
+                        <button type="submit" id="newsletterButton">Subscribe</button>
+                    </form>
+                    <p class="newsletter-note" id="newsletterNote" role="status" aria-live="polite"></p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 Institute of Space Science and Engineering. All rights reserved.</p>
+            <p class="footer-bottom-links">
+                <a href="privacy-policy.html">Privacy Policy</a>
+            </p>
+        </div>
+    </div>
+</footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+<script src="script.js"></script>
+<script>
+
+    // ==================== LOAD ALL NEWS ====================
+async function loadAllNews() {
+    const grid = document.getElementById('newsPageGrid');
+    if (!grid) return;
+
+    try {
+        if (typeof db === 'undefined') {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            if (typeof db === 'undefined') {
+                throw new Error('Supabase not available');
+            }
+        }
+
+        const { data: news, error } = await db
+            .from('news')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        console.log('News page loaded:', news ? news.length : 0, 'articles');
+
+        if (!news || news.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #7F8C8D;">
+                    <p style="font-size: 18px;">No news articles yet. Check back soon!</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = news.map(item => {
+            const summary = item.content ? item.content.substring(0, 120) : '';
+            const hasMore = item.content && item.content.length > 120;
+            return `
+                <div class="news-page-card">
+                    <div class="news-page-image">
+                        <img src="${item.image_url || 'images/default-news.png'}" alt="News thumbnail" loading="lazy">
+                    </div>
+                    <div class="news-page-content">
+                        <span class="news-page-date">${item.date || 'Coming Soon'}</span>
+                        <h3>${item.title}</h3>
+                        <p>${summary}${hasMore ? '...' : ''}</p>
+                        <a href="article.html?id=${item.id}" class="btn btn-link">Read More →</a>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error loading news:', error);
+        grid.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #7F8C8D;">
+                <p style="font-size: 18px;">Unable to load news. Please refresh the page.</p>
+                <p style="font-size: 13px; color: #E74C3C;">Error: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// ==================== INIT ====================
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(loadAllNews, 200);
+});
+</script>
+
+</body>
+</html>

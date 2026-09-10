@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Management - ISSE Admin</title>
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+    </script>
+    <script type="text/javascript">
+        (function() {
+            emailjs.init({
+                publicKey: "GKH7pnImZKwl7k3vZ",
+            });
+        })();
+    </script>
+    <style>
+        .admin-panel { display: flex; min-height: 100vh; background-color: #F5F7FA; }
+        .admin-sidebar { width: 260px; background-color: #0B1A3A; color: #FFFFFF; padding: 20px 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+        .admin-sidebar .logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; text-align: center; }
+        .admin-sidebar .logo img { height: 45px; width: auto; margin: 0 auto 8px; }
+        .admin-sidebar .logo h3 { font-size: 16px; color: #FFFFFF; margin: 0; }
+        .admin-sidebar .logo p { font-size: 12px; color: #B0C4DE; margin: 0; }
+        .admin-sidebar .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #B0C4DE; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; font-size: 14px; font-weight: 500; }
+        .admin-sidebar .nav-item:hover { background-color: rgba(255,255,255,0.05); color: #FFFFFF; }
+        .admin-sidebar .nav-item.active { background-color: rgba(212,168,67,0.1); color: #D4A843; border-left-color: #D4A843; }
+        .admin-sidebar .nav-item .icon { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+        .admin-sidebar .nav-item.logout { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+        .admin-sidebar .nav-item.logout .icon { filter: brightness(0) saturate(100%) invert(48%) sepia(71%) saturate(423%) hue-rotate(340deg) brightness(95%) contrast(94%); }
+        .admin-sidebar .nav-item.logout:hover { background-color: rgba(231,76,60,0.1); }
+        .admin-main { margin-left: 260px; padding: 30px; flex: 1; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #E8ECF0; }
+        .admin-header h1 { font-size: 28px; color: #0B1A3A; margin: 0; }
+        .admin-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; background: none; border: none; }
+        .admin-hamburger span { display: block; width: 25px; height: 3px; background-color: #0B1A3A; border-radius: 3px; }
+
+        .admin-actions { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .admin-actions .btn { padding: 10px 25px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .admin-actions .btn img { width: 16px; height: 16px; object-fit: contain; }
+        .admin-table-wrapper { background: #FFFFFF; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); overflow-x: auto; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .admin-table th { background-color: #F5F7FA; padding: 12px 15px; text-align: left; font-weight: 600; color: #0B1A3A; border-bottom: 2px solid #E8ECF0; }
+        .admin-table td { padding: 12px 15px; border-bottom: 1px solid #F5F7FA; color: #2C3E50; }
+        .admin-table tr:hover { background-color: #FAFBFC; }
+        .admin-table .actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .admin-table .btn-small { padding: 6px 10px; font-size: 12px; border-radius: 6px; border: none; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 4px; }
+        .admin-table .btn-small img { width: 14px; height: 14px; object-fit: contain; }
+        .btn-edit { background-color: #D4A843; color: #0B1A3A; }
+        .btn-edit:hover { background-color: #C49A3A; }
+        .btn-delete { background-color: #E74C3C; color: #FFFFFF; }
+        .btn-delete:hover { background-color: #C0392B; }
+        .btn-deactivate { background-color: #F39C12; color: #FFFFFF; }
+        .btn-deactivate:hover { background-color: #D68910; }
+        .btn-reactivate { background-color: #27AE60; color: #FFFFFF; }
+        .btn-reactivate:hover { background-color: #1E8449; }
+        .btn-small:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .role-tag { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .role-super { background-color: #D4A843; color: #0B1A3A; }
+        .role-admin { background-color: #B0C4DE; color: #0B1A3A; }
+        .role-editor { background-color: #A8D5BA; color: #0B1A3A; }
+
+        .status-active { color: #27AE60; font-weight: 600; }
+        .status-inactive { color: #E74C3C; font-weight: 600; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-overlay.visible { display: flex; }
+        .modal-box { background: #FFFFFF; border-radius: 16px; padding: 35px 40px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-box h2 { font-size: 24px; color: #0B1A3A; margin-bottom: 10px; }
+        .modal-box .subtitle { color: #7F8C8D; font-size: 14px; margin-bottom: 20px; }
+        .modal-box .form-group { margin-bottom: 18px; }
+        .modal-box .form-group label { display: block; font-size: 14px; font-weight: 600; color: #0B1A3A; margin-bottom: 5px; }
+        .modal-box .form-group input, .modal-box .form-group select { width: 100%; padding: 10px 15px; border: 1px solid #E8ECF0; border-radius: 8px; font-size: 14px; font-family: 'Inter', sans-serif; }
+        .modal-box .form-group input:focus, .modal-box .form-group select:focus { outline: none; border-color: #D4A843; }
+        .modal-box .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+        .modal-box .modal-actions .btn { padding: 10px 30px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+        .modal-box .modal-actions .btn img { width: 16px; height: 16px; object-fit: contain; }
+        .btn-cancel { background-color: #E8ECF0; color: #2C3E50; }
+        .btn-cancel:hover { background-color: #D5D8DC; }
+
+        .message { padding: 10px 14px; border-radius: 8px; margin-top: 12px; display: none; font-size: 14px; }
+        .message.success { display: block; background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .message.error { display: block; background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+
+        .empty-state { text-align: center; padding: 40px 20px; color: #7F8C8D; }
+        .empty-state .icon { width: 48px; height: 48px; object-fit: contain; margin-bottom: 10px; }
+
+        /* Admin Dropdown */
+        .admin-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .admin-dropdown-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            color: #2C3E50;
+            font-family: 'Inter', sans-serif;
+        }
+        .admin-dropdown-btn:hover { background-color: rgba(0,0,0,0.05); }
+        .dropdown-arrow { font-size: 10px; transition: transform 0.3s ease; }
+        .admin-dropdown-btn.active .dropdown-arrow { transform: rotate(180deg); }
+        .admin-dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 110%;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            min-width: 180px;
+            padding: 8px 0;
+            z-index: 1000;
+            border: 1px solid #E8ECF0;
+        }
+        .admin-dropdown-menu.show { display: block; }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            color: #2C3E50;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .dropdown-item:hover { background-color: #F5F7FA; }
+        .dropdown-divider { border: none; border-top: 1px solid #E8ECF0; margin: 4px 12px; }
+        .admin-info { display: flex; align-items: center; gap: 15px; font-size: 14px; color: #2C3E50; }
+        .role-badge { background-color: #D4A843; color: #0B1A3A; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+
+        @media (max-width: 768px) {
+            .admin-sidebar { transform: translateX(-100%); width: 280px; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 20px; }
+            .admin-hamburger { display: flex; }
+            .admin-header h1 { font-size: 22px; }
+            .modal-box { padding: 25px 20px; margin: 20px; }
+        }
+        @media (max-width: 480px) {
+            .admin-table { font-size: 12px; }
+            .admin-table th, .admin-table td { padding: 8px 10px; }
+            .admin-actions { flex-direction: column; }
+            .admin-actions .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-panel">
+        <!-- Sidebar -->
+                 <div class="sidebar-skeleton" aria-hidden="true"><div class="skel-logo"></div><div class="skel-line" style="width:70%;margin:0 auto 24px;"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div></div>
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="logo">
+                <img src="images/new-logo.png" alt="ISSE Logo">
+                <h3>ISSE Admin</h3>
+                <p>Institute of Space Science & Engineering</p>
+            </div>
+            <a href="admin-dashboard.html" class="nav-item" id="navDashboard">
+                <img src="icons/dashboard-icon.png" alt="Dashboard" class="icon"> Dashboard
+            </a>
+            <a href="admin-news.html" class="nav-item" id="navNews">
+                <img src="icons/news-icon-admin.png" alt="News" class="icon"> News Management
+            </a>
+            <a href="admin-subscribers.html" class="nav-item" id="navSubscribers">
+                <img src="icons/subscribers-icon.png" alt="Subscribers" class="icon"> Subscribers
+            </a>
+            <a href="admin-messages.html" class="nav-item" id="navMessages">
+                <img src="icons/messages-icon.png" alt="Messages" class="icon"> Contact Messages
+            </a>
+            <a href="admin-admins.html" class="nav-item active" id="navAdmins">
+                <img src="icons/admins-icon.png" alt="Admins" class="icon"> Admin Management
+            </a>
+            <a href="admin-audit.html" class="nav-item" id="navAudit">
+                <img src="icons/audit-icon.png" alt="Audit" class="icon"> Audit Log
+            </a>
+            <a href="admin-banners.html" class="nav-item" id="navBanners">
+    <img src="icons/banner-icon.png" alt="Banners" class="icon"> Banners
+</a>
+<a href="admin-content.html" class="nav-item" id="navContent">
+    <img src="icons/content-icon.png" alt="Content" class="icon"> Site Content
+</a>
+<a href="admin-programs.html" class="nav-item" id="navPrograms">
+    <img src="icons/programs-icon.png" alt="Programs" class="icon"> Programs
+</a>
+<a href="#" class="nav-item" id="navAcademyPanel">
+    <img src="icons/academy-icon.png" alt="Academy Panel" class="icon"> Academy Panel
+</a>
+            <a href="#" class="nav-item logout" id="logoutBtn">
+                <img src="icons/logout-icon.png" alt="Logout" class="icon"> Logout
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="admin-hamburger" id="adminHamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <h1>Admin Management</h1>
+                </div>
+                <div class="admin-info">
+                    <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+        <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+    </button>
+                    <div class="admin-dropdown">
+                        <button class="admin-dropdown-btn" id="adminDropdownBtn">
+                            <span id="adminNameDisplay">Admin</span>
+                            <span class="role-badge" id="adminRoleDisplay">Super Admin</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="admin-dropdown-menu" id="adminDropdownMenu">
+                            <a href="admin-profile.html" class="dropdown-item">
+                                <span>👤</span> Profile
+                            </a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item" id="logoutDropdownBtn">
+                                <span>🚪</span> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-actions">
+                <button class="btn btn-primary" id="addAdminBtn">
+                    <img src="icons/add-icon.png" alt="Add"> Add Admin
+                </button>
+            </div>
+
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Email</th>
+                            <th>Username</th>
+                            <th>Role</th>
+                            <th>Created At</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminsTableBody">
+                        <tr><td colspan="7" style="text-align:center;padding:40px;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== ADD ADMIN MODAL ==================== -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-box">
+            <h2 id="modalTitle">Add Admin</h2>
+            <p class="subtitle" id="modalSubtitle">Enter the details for the new admin account.</p>
+            <form id="adminForm">
+                <input type="hidden" id="editAdminId" value="">
+                <div class="form-group">
+                    <label for="adminEmailInput">Email Address</label>
+                    <input type="email" id="adminEmailInput" placeholder="admin@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminUsernameInput">Username</label>
+                    <input type="text" id="adminUsernameInput" placeholder="Enter username" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminPasswordInput">Password</label>
+                    <input type="text" id="adminPasswordInput" placeholder="Enter temporary password" required>
+                    <small style="color:#7F8C8D;">Minimum 6 characters. The admin can change this later.</small>
+                </div>
+                <div class="form-group">
+                    <label for="adminRoleInput">Role</label>
+                                        <select id="adminRoleInput">
+                        <option value="Admin">Admin</option>
+                        <option value="Editor">Editor</option>
+                        <option value="Super Admin">Super Admin</option>
+                        <option value="Head of Academic Staff">Head of Academic Staff (Academy)</option>
+                        <option value="Academic Staff">Academic Staff (Academy)</option>
+                        <option value="Lecturer">Lecturer (Academy)</option>
+                    </select>
+                </div>
+                <div id="adminFormMessage" class="message"></div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-primary" id="saveAdminBtn">
+                        <img src="icons/add-icon.png" alt="Save"> Save Admin
+                    </button>
+                    <button type="button" class="btn btn-cancel" id="cancelAdminModalBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== CONFIRM DELETE MODAL ==================== -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box">
+            <h2>⚠️ Confirm Action</h2>
+            <p class="subtitle" id="confirmMessage">Are you sure you want to perform this action?</p>
+            <div id="confirmExtra" style="display:none;">
+                <div class="form-group">
+                    <label for="confirmReason">Reason (optional)</label>
+                    <input type="text" id="confirmReason" placeholder="Optional reason for this action">
+                </div>
+            </div>
+            <div id="confirmActionMessage" class="message"></div>
+            <div class="modal-actions">
+                <button class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+                <button class="btn btn-cancel" id="cancelConfirmBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script>
+        // ==================== SESSION CHECK ====================
+        let currentAdmin = null;
+        let adminsList = [];
+        let pendingAction = null;
+
+        initDarkModeToggle();
+        (async function() {
+            const admin = await getCurrentAdmin();
+            if (!admin) {
+                window.location.replace('admin-login.html');
+                return;
+            }
+
+            // Check if Super Admin
+            if (admin.role !== 'Super Admin') {
+                window.location.replace('admin-dashboard.html');
+                return;
+            }
+
+            currentAdmin = admin;
+            document.getElementById('adminNameDisplay').textContent = admin.username;
+            document.getElementById('adminRoleDisplay').textContent = admin.role;
+            
+            // Show/Hide sidebar items based on role
+            const role = admin.role;
+            document.getElementById('navAcademyPanel').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+document.getElementById('navAcademyPanel').href = ACADEMY_URL;
+
+            document.getElementById('navSubscribers').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+                        document.getElementById('navMessages').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+            document.getElementById('navAdmins').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+            document.getElementById('navAudit').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+            document.body.classList.add('nav-ready');
+            
+
+            // Load admins
+            await loadAdmins();
+        })();
+
+        // ==================== LOAD ADMINS ====================
+        async function loadAdmins() {
+            const tbody = document.getElementById('adminsTableBody');
+
+            try {
+                adminsList = await getAllAdmins();
+
+                if (!adminsList || adminsList.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7">
+                                <div class="empty-state">
+                                    <img src="icons/empty-icon.png" alt="No admins" class="icon">
+                                    <p>No admin accounts found.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = adminsList.map((admin, index) => {
+                                        const isAcademyRole = ['Head of Academic Staff', 'Academic Staff', 'Lecturer'].includes(admin.role);
+                    const roleClass = admin.role === 'Super Admin' ? 'role-super' :
+                                     admin.role === 'Editor' ? 'role-editor' :
+                                     isAcademyRole ? 'role-academy' : 'role-admin';
+                    const statusClass = admin.is_active ? 'status-active' : 'status-inactive';
+                    const statusText = admin.is_active ? '✅ Active' : '⛔ Inactive';
+                    const isCurrentUser = admin.id === currentAdmin.id;
+
+                    let actionsHtml = '';
+
+                    // Deactivate/Reactivate buttons (Super Admin only)
+                    if (admin.is_active) {
+                        actionsHtml += `
+                            <button class="btn-small btn-deactivate" onclick="confirmAction('deactivate', '${admin.id}')">
+                                🚫 Deactivate
+                            </button>
+                        `;
+                    } else {
+                        actionsHtml += `
+                            <button class="btn-small btn-reactivate" onclick="confirmAction('reactivate', '${admin.id}')">
+                                ✅ Reactivate
+                            </button>
+                        `;
+                    }
+
+                    // Delete button (Super Admin only, can't delete self)
+                    if (!isCurrentUser) {
+                        actionsHtml += `
+                            <button class="btn-small btn-delete" onclick="confirmAction('delete', '${admin.id}')">
+                                🗑️ Delete
+                            </button>
+                        `;
+                    } else {
+                        actionsHtml += `<span style="font-size:12px;color:#7F8C8D;">(You)</span>`;
+                    }
+
+                    return `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td><strong>${escapeHtml(admin.email)}</strong></td>
+                            <td>${escapeHtml(admin.username)}</td>
+                            <td><span class="role-tag ${roleClass}">${escapeHtml(admin.role)}</span></td>
+                            <td style="font-size:13px;">${admin.created_at ? new Date(admin.created_at).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' }) : 'N/A'}</td>
+                            <td><span class="${statusClass}">${statusText}</span></td>
+                            <td><div class="actions">${actionsHtml}</div></td>
+                        </tr>
+                    `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading admins:', error);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <p style="color:red;">❌ Error loading admins: ${error.message}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // ==================== ESCAPE HTML ====================
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ==================== CONFIRM ACTION MODAL ====================
+        function confirmAction(action, adminId) {
+            const admin = adminsList.find(a => a.id === adminId);
+            if (!admin) return;
+
+            pendingAction = { action, adminId, admin };
+
+            const modal = document.getElementById('confirmModal');
+            const message = document.getElementById('confirmMessage');
+            const extra = document.getElementById('confirmExtra');
+            const confirmBtn = document.getElementById('confirmActionBtn');
+
+            const actionLabels = {
+                'delete': 'Delete Admin',
+                'deactivate': 'Deactivate Admin',
+                'reactivate': 'Reactivate Admin'
+            };
+
+            const actionColors = {
+                'delete': '#E74C3C',
+                'deactivate': '#F39C12',
+                'reactivate': '#27AE60'
+            };
+
+            message.textContent = `Are you sure you want to ${action} ${admin.email} (${admin.username})?`;
+            confirmBtn.textContent = actionLabels[action] || 'Confirm';
+            confirmBtn.style.backgroundColor = actionColors[action] || '#E74C3C';
+
+            extra.style.display = 'none';
+            document.getElementById('confirmActionMessage').className = 'message';
+
+            modal.classList.add('visible');
+        }
+
+        document.getElementById('confirmActionBtn').addEventListener('click', async function() {
+            if (!pendingAction) return;
+
+            const { action, adminId, admin } = pendingAction;
+            const messageEl = document.getElementById('confirmActionMessage');
+            this.disabled = true;
+            this.textContent = 'Processing...';
+
+            try {
+                let result;
+                let actionName = '';
+
+                switch (action) {
+                    case 'delete':
+                        result = await deleteAdmin(adminId);
+                        actionName = 'Deleted Admin';
+                        await logActivity('Deleted Admin', currentAdmin, { target: admin.email });
+                        // Send deletion email
+                        await sendAdminEmail(admin.email, 'deletion', { username: admin.username });
+                        break;
+
+                    case 'deactivate':
+                        result = await deactivateAdmin(adminId);
+                        actionName = 'Deactivated Admin';
+                        await logActivity('Deactivated Admin', currentAdmin, { target: admin.email });
+                        // Send deactivation email
+                        await sendAdminEmail(admin.email, 'deactivation', { username: admin.username });
+                        break;
+
+                    case 'reactivate':
+                        result = await reactivateAdmin(adminId);
+                        actionName = 'Reactivated Admin';
+                        await logActivity('Reactivated Admin', currentAdmin, { target: admin.email });
+                        // Send reactivation email
+                        await sendAdminEmail(admin.email, 'reactivation', { username: admin.username });
+                        break;
+
+                    default:
+                        throw new Error('Unknown action');
+                }
+
+                messageEl.className = 'message success';
+                messageEl.textContent = `✅ ${actionName} successful!`;
+
+                // If deactivated, also sign them out (they'll be redirected on next page load)
+                if (action === 'deactivate') {
+                    // Note: Supabase doesn't have a built-in way to force logout a specific user
+                    // We handle this by checking is_active on each page load
+                }
+
+                setTimeout(() => {
+                    document.getElementById('confirmModal').classList.remove('visible');
+                    loadAdmins();
+                }, 1500);
+
+            } catch (error) {
+                console.error(`Error ${action} admin:`, error);
+                messageEl.className = 'message error';
+                messageEl.textContent = `❌ Error: ${error.message}`;
+                this.disabled = false;
+                this.textContent = 'Confirm';
+            }
+        });
+
+        document.getElementById('cancelConfirmBtn').addEventListener('click', function() {
+            document.getElementById('confirmModal').classList.remove('visible');
+            pendingAction = null;
+        });
+
+        document.getElementById('confirmModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('visible');
+                pendingAction = null;
+            }
+        });
+
+        // ==================== ADD ADMIN MODAL ====================
+        document.getElementById('addAdminBtn').addEventListener('click', function() {
+            document.getElementById('modalTitle').textContent = 'Add Admin';
+            document.getElementById('modalSubtitle').textContent = 'Enter the details for the new admin account.';
+            document.getElementById('editAdminId').value = '';
+            document.getElementById('adminForm').reset();
+            document.getElementById('adminFormMessage').className = 'message';
+            document.getElementById('saveAdminBtn').innerHTML = '<img src="icons/add-icon.png" alt="Save"> Save Admin';
+            document.getElementById('adminModal').classList.add('visible');
+        });
+
+        document.getElementById('cancelAdminModalBtn').addEventListener('click', function() {
+            document.getElementById('adminModal').classList.remove('visible');
+        });
+
+        document.getElementById('adminModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('visible');
+        });
+
+        // ==================== SUBMIT ADMIN FORM ====================
+        document.getElementById('adminForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('adminEmailInput').value.trim();
+            const username = document.getElementById('adminUsernameInput').value.trim();
+            const password = document.getElementById('adminPasswordInput').value;
+            const role = document.getElementById('adminRoleInput').value;
+            const messageEl = document.getElementById('adminFormMessage');
+            const btn = document.getElementById('saveAdminBtn');
+
+            // Validate
+            if (!email || !username || !password) {
+                messageEl.className = 'message error';
+                messageEl.textContent = 'Please fill in all fields.';
+                return;
+            }
+
+            if (password.length < 6) {
+                messageEl.className = 'message error';
+                messageEl.textContent = 'Password must be at least 6 characters.';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Adding...';
+
+            try {
+                const result = await addAdmin(email, username, password, role);
+
+                // Log the activity
+                await logActivity('Added Admin', currentAdmin, { target: email, role: role });
+
+                // Send welcome email
+                await sendAdminEmail(email, 'welcome', {
+    username: username,
+    password: password,
+    role: role,
+    login_url: SITE_ORIGIN + '/admin-login.html'
+});
+
+                messageEl.className = 'message success';
+                messageEl.textContent = `✅ Admin ${email} added successfully! Welcome email sent.`;
+
+                btn.disabled = false;
+                btn.innerHTML = '<img src="icons/add-icon.png" alt="Save"> Save Admin';
+
+                setTimeout(() => {
+                    document.getElementById('adminModal').classList.remove('visible');
+                    loadAdmins();
+                    document.getElementById('adminForm').reset();
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error adding admin:', error);
+                messageEl.className = 'message error';
+                messageEl.textContent = `❌ Error: ${error.message}`;
+                btn.disabled = false;
+                btn.innerHTML = '<img src="icons/add-icon.png" alt="Save"> Save Admin';
+            }
+        });
+
+        // ==================== SEND ADMIN EMAILS (EmailJS) ====================
+async function sendAdminEmail(email, type, data) {
+    try {
+        if (typeof emailjs === 'undefined') {
+            console.warn('EmailJS not loaded. Skipping email.');
+            return;
+        }
+
+        let emailSubject = '';
+        let headerTitle = '';
+        let emailBody = '';
+
+        switch (type) {
+            case 'welcome':
+                emailSubject = 'Welcome to ISSE Admin Panel';
+                headerTitle = 'Welcome to ISSE Admin';
+                emailBody = `
+                    <p>Hello <strong>${data.username}</strong>,</p>
+                    <p>You have been added as an <strong>${data.role}</strong> to the ISSE Admin Panel.</p>
+                    <p>Here are your login credentials:</p>
+                    <div style="background-color: #F5F7FA; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <p style="margin: 5px 0;"><strong>Email:</strong> ${email}</p>
+                        <p style="margin: 5px 0;"><strong>Password:</strong> <code style="background: #E8ECF0; padding: 2px 8px; border-radius: 4px;">${data.password}</code></p>
+                    </div>
+                    <p style="margin-top: 15px;">
+                        <a href="${data.login_url}" style="background-color: #D4A843; color: #0B1A3A; padding: 12px 30px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block;">Login to Admin Panel</a>
+                    </p>
+                    <p style="margin-top: 20px; font-size: 14px; color: #7F8C8D;">We strongly recommend changing your password after your first login.</p>
+                `;
+                break;
+
+            case 'deactivation':
+                emailSubject = 'Your ISSE Admin Account Has Been Deactivated';
+                headerTitle = 'Account Deactivated';
+                emailBody = `
+                    <p>Hello <strong>${data.username}</strong>,</p>
+                    <p>Your admin account for the <strong>ISSE Admin Panel</strong> has been <strong style="color: #E74C3C;">deactivated</strong> by a Super Admin.</p>
+                    <div style="background-color: #FDE8E8; padding: 15px; border-radius: 8px; border-left: 4px solid #E74C3C; margin: 15px 0;">
+                        <p style="margin: 0; color: #721c24;">You can no longer log in to the admin panel.</p>
+                    </div>
+                    <p>If you believe this was done in error, please contact the Super Admin.</p>
+                `;
+                break;
+
+            case 'reactivation':
+                emailSubject = 'Your ISSE Admin Account Has Been Reactivated';
+                headerTitle = 'Account Reactivated';
+                emailBody = `
+                    <p>Hello <strong>${data.username}</strong>,</p>
+                    <p>Your admin account for the <strong>ISSE Admin Panel</strong> has been <strong style="color: #27AE60;">reactivated</strong>.</p>
+                    <div style="background-color: #D4EDDA; padding: 15px; border-radius: 8px; border-left: 4px solid #27AE60; margin: 15px 0;">
+                        <p style="margin: 0; color: #155724;">You can now log in to the admin panel again.</p>
+                    </div>
+                    <p style="margin-top: 15px;">
+                        <a href="${data.login_url}" style="background-color: #D4A843; color: #0B1A3A; padding: 12px 30px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block;">Login to Admin Panel</a>
+                    </p>
+                `;
+                break;
+
+            case 'deletion':
+                emailSubject = 'Your ISSE Admin Account Has Been Deleted';
+                headerTitle = 'Account Deleted';
+                emailBody = `
+                    <p>Hello <strong>${data.username}</strong>,</p>
+                    <p>Your admin account for the <strong>ISSE Admin Panel</strong> has been <strong style="color: #E74C3C;">deleted</strong>.</p>
+                    <div style="background-color: #FDE8E8; padding: 15px; border-radius: 8px; border-left: 4px solid #E74C3C; margin: 15px 0;">
+                        <p style="margin: 0; color: #721c24;">You no longer have access to the admin panel.</p>
+                    </div>
+                    <p>If this was unexpected, please contact the Super Admin immediately.</p>
+                `;
+                break;
+
+            default:
+                console.warn('Unknown email type:', type);
+                return;
+        }
+
+        const templateParams = {
+            to_email: email,
+            email_subject: emailSubject,
+            header_title: headerTitle,
+            email_body: emailBody
+        };
+
+        console.log('📧 Sending email with params:', templateParams);
+
+        const response = await emailjs.send(
+            'service_hwsisjp',
+            'template_s4cgwlp',
+            templateParams
+        );
+
+        console.log(`✅ ${type} email sent to ${email}`, response.status);
+        return response;
+
+    } catch (error) {
+        console.error('❌ Error sending email:', error);
+        console.error('Error details:', error.text || error.message);
+        // Don't throw - email failure shouldn't break the admin action
+    }
+}
+
+        // ==================== ADMIN DROPDOWN ====================
+        const dropdownBtn = document.getElementById('adminDropdownBtn');
+        const dropdownMenu = document.getElementById('adminDropdownMenu');
+
+        if (dropdownBtn && dropdownMenu) {
+            dropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                dropdownMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownBtn.classList.remove('active');
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+
+                        document.getElementById('logoutDropdownBtn').addEventListener('click', async function(e) {
+                e.preventDefault();
+                await logActivity('Logout', currentAdmin, {});
+                                await db.auth.signOut();
+                window.location.replace('admin-login.html');
+            });
+        }
+
+        // ==================== HAMBURGER TOGGLE ====================
+        document.getElementById('adminHamburger').addEventListener('click', function() {
+            document.getElementById('adminSidebar').classList.toggle('open');
+        });
+
+        // ==================== LOGOUT ====================
+                document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            await logActivity('Logout', currentAdmin, {});
+                            await db.auth.signOut();
+                window.location.replace('admin-login.html');
+        });
+    </script>
+</body>
+</html>

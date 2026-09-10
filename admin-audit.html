@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Log - ISSE Admin</title>
+    <link rel="icon" type="image/png" href="images/new-logo.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        .admin-panel { display: flex; min-height: 100vh; background-color: #F5F7FA; }
+        .admin-sidebar { width: 260px; background-color: #0B1A3A; color: #FFFFFF; padding: 20px 0; position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+        .admin-sidebar .logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; text-align: center; }
+        .admin-sidebar .logo img { height: 45px; width: auto; margin: 0 auto 8px; }
+        .admin-sidebar .logo h3 { font-size: 16px; color: #FFFFFF; margin: 0; }
+        .admin-sidebar .logo p { font-size: 12px; color: #B0C4DE; margin: 0; }
+        .admin-sidebar .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #B0C4DE; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; font-size: 14px; font-weight: 500; }
+        .admin-sidebar .nav-item:hover { background-color: rgba(255,255,255,0.05); color: #FFFFFF; }
+        .admin-sidebar .nav-item.active { background-color: rgba(212,168,67,0.1); color: #D4A843; border-left-color: #D4A843; }
+        .admin-sidebar .nav-item .icon { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+        .admin-sidebar .nav-item.logout { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px; }
+        .admin-sidebar .nav-item.logout .icon { filter: brightness(0) saturate(100%) invert(48%) sepia(71%) saturate(423%) hue-rotate(340deg) brightness(95%) contrast(94%); }
+        .admin-sidebar .nav-item.logout:hover { background-color: rgba(231,76,60,0.1); }
+        .admin-main { margin-left: 260px; padding: 30px; flex: 1; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #E8ECF0; }
+        .admin-header h1 { font-size: 28px; color: #0B1A3A; margin: 0; }
+        .admin-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; background: none; border: none; }
+        .admin-hamburger span { display: block; width: 25px; height: 3px; background-color: #0B1A3A; border-radius: 3px; }
+
+        .admin-table-wrapper { background: #FFFFFF; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); overflow-x: auto; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .admin-table th { background-color: #F5F7FA; padding: 12px 15px; text-align: left; font-weight: 600; color: #0B1A3A; border-bottom: 2px solid #E8ECF0; }
+        .admin-table td { padding: 12px 15px; border-bottom: 1px solid #F5F7FA; color: #2C3E50; }
+        .admin-table tr:hover { background-color: #FAFBFC; }
+        .admin-table .action-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .admin-table .action-login { background-color: #D4E8D4; color: #1A5A1A; }
+        .admin-table .action-logout { background-color: #F5E6E6; color: #8A2A2A; }
+        .admin-table .action-news { background-color: #E3F0F5; color: #1A4A6A; }
+        .admin-table .action-admin { background-color: #F5EDE0; color: #8A6A2A; }
+        .admin-table .action-profile { background-color: #E8E0F5; color: #4A2A8A; }
+        .admin-table .action-delete { background-color: #FDE8E8; color: #8A1A1A; }
+        .admin-table .action-default { background-color: #F0F0F0; color: #555; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: #7F8C8D; }
+        .empty-state .icon { width: 48px; height: 48px; object-fit: contain; margin-bottom: 10px; }
+
+        .filter-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .filter-bar select, .filter-bar input {
+            padding: 8px 14px;
+            border: 1px solid #E8ECF0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            background: #FFFFFF;
+        }
+        .filter-bar select:focus, .filter-bar input:focus {
+            outline: none;
+            border-color: #D4A843;
+        }
+        .filter-bar .btn {
+            padding: 8px 20px;
+            font-size: 13px;
+        }
+
+        /* Admin Dropdown */
+        .admin-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .admin-dropdown-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            font-size: 14px;
+            color: #2C3E50;
+            font-family: 'Inter', sans-serif;
+        }
+        .admin-dropdown-btn:hover { background-color: rgba(0,0,0,0.05); }
+        .dropdown-arrow { font-size: 10px; transition: transform 0.3s ease; }
+        .admin-dropdown-btn.active .dropdown-arrow { transform: rotate(180deg); }
+        .admin-dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 110%;
+            background: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            min-width: 180px;
+            padding: 8px 0;
+            z-index: 1000;
+            border: 1px solid #E8ECF0;
+        }
+        .admin-dropdown-menu.show { display: block; }
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            color: #2C3E50;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .dropdown-item:hover { background-color: #F5F7FA; }
+        .dropdown-divider { border: none; border-top: 1px solid #E8ECF0; margin: 4px 12px; }
+        .admin-info { display: flex; align-items: center; gap: 15px; font-size: 14px; color: #2C3E50; }
+        .role-badge { background-color: #D4A843; color: #0B1A3A; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+
+        @media (max-width: 768px) {
+            .admin-sidebar { transform: translateX(-100%); width: 280px; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { margin-left: 0; padding: 20px; }
+            .admin-hamburger { display: flex; }
+            .admin-header h1 { font-size: 22px; }
+            .filter-bar { flex-direction: column; }
+            .filter-bar select, .filter-bar input, .filter-bar .btn { width: 100%; }
+        }
+        @media (max-width: 480px) {
+            .admin-table { font-size: 12px; }
+            .admin-table th, .admin-table td { padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-panel">
+        <!-- Sidebar -->
+                 <div class="sidebar-skeleton" aria-hidden="true"><div class="skel-logo"></div><div class="skel-line" style="width:70%;margin:0 auto 24px;"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div></div>
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="logo">
+                <img src="images/new-logo.png" alt="ISSE Logo">
+                <h3>ISSE Admin</h3>
+                <p>Institute of Space Science & Engineering</p>
+            </div>
+            <a href="admin-dashboard.html" class="nav-item" id="navDashboard">
+                <img src="icons/dashboard-icon.png" alt="Dashboard" class="icon"> Dashboard
+            </a>
+            <a href="admin-news.html" class="nav-item" id="navNews">
+                <img src="icons/news-icon-admin.png" alt="News" class="icon"> News Management
+            </a>
+            <a href="admin-subscribers.html" class="nav-item" id="navSubscribers">
+                <img src="icons/subscribers-icon.png" alt="Subscribers" class="icon"> Subscribers
+            </a>
+            <a href="admin-messages.html" class="nav-item" id="navMessages">
+                <img src="icons/messages-icon.png" alt="Messages" class="icon"> Contact Messages
+            </a>
+            <a href="admin-admins.html" class="nav-item" id="navAdmins">
+                <img src="icons/admins-icon.png" alt="Admins" class="icon"> Admin Management
+            </a>
+            <a href="admin-audit.html" class="nav-item active" id="navAudit">
+                <img src="icons/audit-icon.png" alt="Audit" class="icon"> Audit Log
+            </a>
+            <a href="admin-banners.html" class="nav-item" id="navBanners">
+    <img src="icons/banner-icon.png" alt="Banners" class="icon"> Banners
+</a>
+<a href="admin-content.html" class="nav-item" id="navContent">
+    <img src="icons/content-icon.png" alt="Content" class="icon"> Site Content
+</a>
+<a href="admin-programs.html" class="nav-item" id="navPrograms">
+    <img src="icons/programs-icon.png" alt="Programs" class="icon"> Programs
+</a>
+<a href="#" class="nav-item" id="navAcademyPanel">
+    <img src="icons/academy-icon.png" alt="Academy Panel" class="icon"> Academy Panel
+</a>
+            <a href="#" class="nav-item logout" id="logoutBtn">
+                <img src="icons/logout-icon.png" alt="Logout" class="icon"> Logout
+            </a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="admin-header">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="admin-hamburger" id="adminHamburger">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <h1>Audit Log</h1>
+                </div>
+                <div class="admin-info">
+                    <button class="dark-toggle" id="darkToggle" aria-label="Toggle dark mode">
+        <img src="icons/moon-icon.png" alt="Dark Mode" id="darkIcon">
+    </button>
+                    <div class="admin-dropdown">
+                        <button class="admin-dropdown-btn" id="adminDropdownBtn">
+                            <span id="adminNameDisplay">Admin</span>
+                            <span class="role-badge" id="adminRoleDisplay">Super Admin</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="admin-dropdown-menu" id="adminDropdownMenu">
+                            <a href="admin-profile.html" class="dropdown-item">
+                                <span>👤</span> Profile
+                            </a>
+                            <hr class="dropdown-divider">
+                            <a href="#" class="dropdown-item" id="logoutDropdownBtn">
+                                <span>🚪</span> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <select id="actionFilter">
+                    <option value="">All Actions</option>
+                    <option value="Admin Login">Admin Login</option>
+                    <option value="Admin Logout">Admin Logout</option>
+                    <option value="Added News">Added News</option>
+                    <option value="Edited News">Edited News</option>
+                    <option value="Deleted News">Deleted News</option>
+                    <option value="Added Admin">Added Admin</option>
+                    <option value="Deleted Admin">Deleted Admin</option>
+                    <option value="Deactivated Admin">Deactivated Admin</option>
+                    <option value="Reactivated Admin">Reactivated Admin</option>
+                    <option value="Password Change">Password Change</option>
+                    <option value="Profile Update">Profile Update</option>
+                    <option value="Account Deleted">Account Deleted</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="Search by email or action...">
+                <button class="btn btn-primary" id="refreshLogsBtn">🔄 Refresh</button>
+                <span style="font-size:13px; color:#7F8C8D;" id="logCount">0 entries</span>
+            </div>
+
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Admin</th>
+                            <th>Action</th>
+                            <th>Details</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script>
+        // ==================== SESSION CHECK ====================
+        let currentAdmin = null;
+        let allLogs = [];
+
+        initDarkModeToggle();
+        (async function() {
+            const admin = await getCurrentAdmin();
+            if (!admin) {
+                window.location.replace('admin-login.html');
+                return;
+            }
+
+            // Check if Super Admin
+            if (admin.role !== 'Super Admin') {
+                window.location.replace('admin-dashboard.html');
+                return;
+            }
+
+            currentAdmin = admin;
+            document.getElementById('adminNameDisplay').textContent = admin.username;
+            document.getElementById('adminRoleDisplay').textContent = admin.role;
+            
+            // Show/Hide sidebar items based on role
+            const role = admin.role;
+            document.getElementById('navAcademyPanel').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+document.getElementById('navAcademyPanel').href = ACADEMY_URL;
+
+            document.getElementById('navSubscribers').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+                        document.getElementById('navMessages').style.display = (role === 'Super Admin' || role === 'Admin') ? 'flex' : 'none';
+            document.getElementById('navAdmins').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+            document.getElementById('navAudit').style.display = (role === 'Super Admin') ? 'flex' : 'none';
+            document.body.classList.add('nav-ready');
+            
+
+            // Load audit logs
+            await loadAuditLogs();
+        })();
+
+        // ==================== LOAD AUDIT LOGS ====================
+        async function loadAuditLogs() {
+            const tbody = document.getElementById('auditTableBody');
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;">Loading...</td></tr>`;
+
+            try {
+                allLogs = await getAuditLogs(500);
+                renderLogs(allLogs);
+            } catch (error) {
+                console.error('Error loading audit logs:', error);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <p style="color:red;">❌ Error loading audit logs: ${error.message}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // ==================== RENDER LOGS ====================
+        function renderLogs(logs) {
+            const tbody = document.getElementById('auditTableBody');
+
+            if (!logs || logs.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <p>No audit logs found.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('logCount').textContent = '0 entries';
+                return;
+            }
+
+            document.getElementById('logCount').textContent = logs.length + ' entries';
+
+            tbody.innerHTML = logs.map((log, index) => {
+                const actionClass = getActionClass(log.action);
+                const details = log.details ? JSON.stringify(log.details) : '';
+                const timestamp = log.created_at ? new Date(log.created_at).toLocaleString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                }) : 'N/A';
+
+                return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${escapeHtml(log.admin_email || 'Unknown')}</strong></td>
+                        <td><span class="action-badge ${actionClass}">${escapeHtml(log.action || 'Unknown')}</span></td>
+                        <td style="font-size:13px; color:#7F8C8D;">${escapeHtml(details)}</td>
+                        <td style="font-size:13px; white-space:nowrap;">${timestamp}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ==================== ACTION BADGE CLASS ====================
+        function getActionClass(action) {
+            if (!action) return 'action-default';
+            if (action.includes('Login')) return 'action-login';
+            if (action.includes('Logout')) return 'action-logout';
+            if (action.includes('News') || action.includes('news')) return 'action-news';
+            if (action.includes('Admin') || action.includes('admin') || action.includes('Deactivated') || action.includes('Reactivated')) return 'action-admin';
+            if (action.includes('Profile') || action.includes('Password')) return 'action-profile';
+            if (action.includes('Deleted') || action.includes('Delete')) return 'action-delete';
+            return 'action-default';
+        }
+
+        // ==================== ESCAPE HTML ====================
+        function escapeHtml(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ==================== FILTER LOGS ====================
+        document.getElementById('actionFilter').addEventListener('change', filterLogs);
+        document.getElementById('searchInput').addEventListener('input', filterLogs);
+
+        function filterLogs() {
+            const actionFilter = document.getElementById('actionFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = allLogs;
+
+            if (actionFilter) {
+                filtered = filtered.filter(log => log.action === actionFilter);
+            }
+
+            if (searchTerm) {
+                filtered = filtered.filter(log =>
+                    (log.admin_email || '').toLowerCase().includes(searchTerm) ||
+                    (log.action || '').toLowerCase().includes(searchTerm)
+                );
+            }
+
+            renderLogs(filtered);
+        }
+
+        // ==================== REFRESH ====================
+        document.getElementById('refreshLogsBtn').addEventListener('click', function() {
+            this.textContent = '⏳ Loading...';
+            this.disabled = true;
+            loadAuditLogs().then(() => {
+                this.textContent = '🔄 Refresh';
+                this.disabled = false;
+            });
+        });
+
+        // ==================== ADMIN DROPDOWN ====================
+        const dropdownBtn = document.getElementById('adminDropdownBtn');
+        const dropdownMenu = document.getElementById('adminDropdownMenu');
+
+        if (dropdownBtn && dropdownMenu) {
+            dropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('active');
+                dropdownMenu.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownBtn.classList.remove('active');
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+
+                        document.getElementById('logoutDropdownBtn').addEventListener('click', async function(e) {
+                e.preventDefault();
+                await logActivity('Logout', currentAdmin, {});
+                                await db.auth.signOut();
+                window.location.replace('admin-login.html');
+            });
+        }
+
+        // ==================== HAMBURGER TOGGLE ====================
+        document.getElementById('adminHamburger').addEventListener('click', function() {
+            document.getElementById('adminSidebar').classList.toggle('open');
+        });
+
+        // ==================== LOGOUT ====================
+                document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            await logActivity('Logout', currentAdmin, {});
+                            await db.auth.signOut();
+                window.location.replace('admin-login.html');
+        });
+    </script>
+</body>
+</html>

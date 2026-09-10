@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Supabase - ISSE</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+        .success { color: green; background: #d4edda; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .error { color: red; background: #f8d7da; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .info { background: #e7f3ff; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .box { background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .loading { color: #666; }
+    </style>
+</head>
+<body>
+    <h1>🔌 Testing Supabase Connection</h1>
+    <div id="result" class="loading">⏳ Loading... Please wait.</div>
+
+    <script>
+        // 🔴 REPLACE these with YOUR actual values from Supabase
+        const supabaseUrl = 'https://zocxorvtnmgbxdtndyax.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvY3hvcnZ0bm1nYnhkdG5keWF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5MzcyNTcsImV4cCI6MjEwMzUxMzI1N30.uXt--QbX2jdeZ3uoGK4nz4U2JtBMJwLTfEfvn8_SQkg';
+
+        console.log('Supabase URL:', supabaseUrl);
+        console.log('Supabase Key length:', supabaseKey.length);
+
+        // Check if credentials are still placeholder
+        if (supabaseUrl.includes('YOUR-PROJECT-ID') || supabaseKey.includes('YOUR-ANON-KEY')) {
+            document.getElementById('result').innerHTML = `
+                <div class="error">
+                    ❌ Please replace the supabaseUrl and supabaseKey with your actual values from Supabase!
+                    <br><br>
+                    <strong>Where to find them:</strong><br>
+                    1. Go to Supabase Dashboard<br>
+                    2. Click Settings (gear icon)<br>
+                    3. Click API<br>
+                    4. Copy the "Project URL" and "anon public" key
+                </div>
+            `;
+        } else {
+            // ✅ FIXED: Use a different variable name for the client
+            const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+            async function testAll() {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '⏳ Testing connection...';
+
+                try {
+                    // Test 1: Get News
+                    const { data: news, error: newsError } = await supabaseClient
+                        .from('news')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (newsError) throw new Error('News error: ' + newsError.message);
+
+                    let html = `<div class="success">✅ Connected to Supabase successfully!</div>`;
+                    html += `<div class="box">📰 <strong>News Articles Found:</strong> ${news.length}</div>`;
+                    
+                    if (news.length > 0) {
+                        html += `<div class="box">`;
+                        news.forEach((item, index) => {
+                            html += `${index + 1}. <strong>${item.title}</strong> (${item.date})<br>`;
+                        });
+                        html += `</div>`;
+                    } else {
+                        html += `<div class="info">No news articles found. You can add some in the Table Editor.</div>`;
+                    }
+
+                    // Test 2: Get Subscribers
+                    const { data: subs, error: subError } = await supabaseClient
+                        .from('subscribers')
+                        .select('*');
+
+                    if (subError) throw new Error('Subscribers error: ' + subError.message);
+                    html += `<div class="box">📧 <strong>Subscribers Found:</strong> ${subs.length}</div>`;
+
+                    // Test 3: Get Contact Messages
+                    const { data: msgs, error: msgError } = await supabaseClient
+                        .from('contact_messages')
+                        .select('*');
+
+                    if (msgError) throw new Error('Messages error: ' + msgError.message);
+                    html += `<div class="box">💬 <strong>Contact Messages Found:</strong> ${msgs.length}</div>`;
+
+                    html += `<div class="success" style="background: #d4edda; border: 1px solid green; padding: 20px; margin-top: 20px;">
+                        🎉 <strong>All tests passed!</strong> Your website can talk to Supabase!
+                        <br><br>
+                        ✅ News table: Working<br>
+                        ✅ Subscribers table: Working<br>
+                        ✅ Contact Messages table: Working
+                    </div>`;
+
+                    resultDiv.innerHTML = html;
+
+                } catch (error) {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ Error: ${error.message}
+                            <br><br>
+                            <strong>Possible issues:</strong><br>
+                            1. Check your Project URL is correct<br>
+                            2. Check your anon key is correct<br>
+                            3. Make sure RLS policies allow reading<br>
+                            4. Check that your tables exist
+                        </div>
+                    `;
+                    console.error('Test error:', error);
+                }
+            }
+
+            // Run the test
+            testAll();
+        }
+    </script>
+</body>
+</html>
+
+4ca664c7-3999-43f0-9a00-a7c08fb2bf42
