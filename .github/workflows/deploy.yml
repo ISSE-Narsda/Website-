@@ -19,5 +19,4 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /portal.isse.edu.ng/
-          security: loose
+          server-dir: /public_html/ISSE-Website-Project/
